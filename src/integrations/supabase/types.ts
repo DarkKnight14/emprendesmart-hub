@@ -14,16 +14,267 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      actividades: {
+        Row: {
+          created_at: string
+          descripcion: string
+          duracion: number | null
+          emprendimiento_id: string
+          fecha: string
+          id: string
+          impacto: Database["public"]["Enums"]["impacto_nivel"] | null
+          monto: number
+          tipo_actividad: Database["public"]["Enums"]["tipo_actividad"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          descripcion: string
+          duracion?: number | null
+          emprendimiento_id: string
+          fecha?: string
+          id?: string
+          impacto?: Database["public"]["Enums"]["impacto_nivel"] | null
+          monto?: number
+          tipo_actividad: Database["public"]["Enums"]["tipo_actividad"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string
+          duracion?: number | null
+          emprendimiento_id?: string
+          fecha?: string
+          id?: string
+          impacto?: Database["public"]["Enums"]["impacto_nivel"] | null
+          monto?: number
+          tipo_actividad?: Database["public"]["Enums"]["tipo_actividad"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actividades_emprendimiento_id_fkey"
+            columns: ["emprendimiento_id"]
+            isOneToOne: false
+            referencedRelation: "emprendimientos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alertas: {
+        Row: {
+          emprendimiento_id: string
+          fecha: string
+          id: string
+          leida: boolean
+          mensaje: string
+          nivel: Database["public"]["Enums"]["alerta_nivel"]
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          emprendimiento_id: string
+          fecha?: string
+          id?: string
+          leida?: boolean
+          mensaje: string
+          nivel?: Database["public"]["Enums"]["alerta_nivel"]
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          emprendimiento_id?: string
+          fecha?: string
+          id?: string
+          leida?: boolean
+          mensaje?: string
+          nivel?: Database["public"]["Enums"]["alerta_nivel"]
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertas_emprendimiento_id_fkey"
+            columns: ["emprendimiento_id"]
+            isOneToOne: false
+            referencedRelation: "emprendimientos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          actividad_id: string
+          contenido: string
+          created_at: string
+          editado: boolean
+          fecha_edicion: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          actividad_id: string
+          contenido: string
+          created_at?: string
+          editado?: boolean
+          fecha_edicion?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          actividad_id?: string
+          contenido?: string
+          created_at?: string
+          editado?: boolean
+          fecha_edicion?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_actividad_id_fkey"
+            columns: ["actividad_id"]
+            isOneToOne: false
+            referencedRelation: "actividades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emprendimientos: {
+        Row: {
+          created_at: string
+          estado: string
+          fecha_inicio: string
+          id: string
+          nombre: string
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fecha_inicio?: string
+          id?: string
+          nombre: string
+          tipo?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fecha_inicio?: string
+          id?: string
+          nombre?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      indicadores: {
+        Row: {
+          emprendimiento_id: string
+          fecha_calculo: string
+          id: string
+          nombre: string
+          tendencia: Database["public"]["Enums"]["tendencia"]
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          emprendimiento_id: string
+          fecha_calculo?: string
+          id?: string
+          nombre: string
+          tendencia?: Database["public"]["Enums"]["tendencia"]
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          emprendimiento_id?: string
+          fecha_calculo?: string
+          id?: string
+          nombre?: string
+          tendencia?: Database["public"]["Enums"]["tendencia"]
+          user_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indicadores_emprendimiento_id_fkey"
+            columns: ["emprendimiento_id"]
+            isOneToOne: false
+            referencedRelation: "emprendimientos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          correo: string
+          created_at: string
+          id: string
+          nombre: string
+          updated_at: string
+        }
+        Insert: {
+          correo?: string
+          created_at?: string
+          id: string
+          nombre?: string
+          updated_at?: string
+        }
+        Update: {
+          correo?: string
+          created_at?: string
+          id?: string
+          nombre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      alerta_nivel: "informativa" | "advertencia" | "critica"
+      app_role: "admin" | "user"
+      impacto_nivel: "bajo" | "medio" | "alto"
+      tendencia: "sube" | "baja" | "estable"
+      tipo_actividad: "ingreso" | "gasto" | "tarea" | "cliente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +401,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alerta_nivel: ["informativa", "advertencia", "critica"],
+      app_role: ["admin", "user"],
+      impacto_nivel: ["bajo", "medio", "alto"],
+      tendencia: ["sube", "baja", "estable"],
+      tipo_actividad: ["ingreso", "gasto", "tarea", "cliente"],
+    },
   },
 } as const
