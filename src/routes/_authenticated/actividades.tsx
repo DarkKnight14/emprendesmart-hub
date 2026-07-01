@@ -116,8 +116,6 @@ function Actividades() {
                     <SelectContent>
                       <SelectItem value="ingreso">Ingreso</SelectItem>
                       <SelectItem value="gasto">Gasto</SelectItem>
-                      <SelectItem value="tarea">Tarea</SelectItem>
-                      <SelectItem value="cliente">Cliente</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
