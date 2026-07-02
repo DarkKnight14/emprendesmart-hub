@@ -1,14 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Store as StoreIcon } from "lucide-react";
+import { Plus, Trash2, Pencil, Store as StoreIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -18,49 +34,116 @@ export const Route = createFileRoute("/_authenticated/emprendimientos")({
   component: Emprendimientos,
 });
 
-type Emp = { id: string; nombre: string; tipo: string; estado: string; fecha_inicio: string };
+type Emp = {
+  id: string;
+  nombre: string;
+  tipo: string;
+  estado: string;
+  fecha_inicio: string;
+};
+
+const EMPTY_FORM = {
+  nombre: "",
+  tipo: "Tienda local",
+  estado: "activo",
+  fecha_inicio: format(new Date(), "yyyy-MM-dd"),
+};
+
+const ESTADO_BADGE: Record<string, "default" | "secondary" | "destructive"> = {
+  activo: "default",
+  pausado: "secondary",
+  cerrado: "destructive",
+};
 
 function Emprendimientos() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Emp | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["emprendimientos-full"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("emprendimientos").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("emprendimientos")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []) as Emp[];
     },
   });
 
-  const createMut = useMutation({
+  const saveMut = useMutation({
     mutationFn: async (input: Omit<Emp, "id">) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("No auth");
-      const { error } = await supabase.from("emprendimientos").insert({ ...input, user_id: u.user.id } as never);
-      if (error) throw error;
+      if (editing) {
+        const { error } = await supabase
+          .from("emprendimientos")
+          .update(input as never)
+          .eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("emprendimientos")
+          .insert({ ...input, user_id: u.user.id } as never);
+        if (error) throw error;
+      }
     },
-    onSuccess: () => { toast.success("Emprendimiento creado"); qc.invalidateQueries(); setOpen(false); },
+    onSuccess: () => {
+      toast.success(editing ? "Emprendimiento actualizado" : "Emprendimiento creado");
+      qc.invalidateQueries({ queryKey: ["emprendimientos-full"] });
+      qc.invalidateQueries({ queryKey: ["emprendimientos"] });
+      closeModal();
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const delMut = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("emprendimientos").delete().eq("id", id);
+      const { error } = await supabase
+        .from("emprendimientos")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Eliminado"); qc.invalidateQueries(); },
+    onSuccess: () => {
+      toast.success("Eliminado");
+      qc.invalidateQueries({ queryKey: ["emprendimientos-full"] });
+      qc.invalidateQueries({ queryKey: ["emprendimientos"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    createMut.mutate({
-      nombre: String(fd.get("nombre")),
-      tipo: String(fd.get("tipo")),
-      estado: String(fd.get("estado")),
-      fecha_inicio: String(fd.get("fecha_inicio")),
+  function openCreate() {
+    setEditing(null);
+    setForm(EMPTY_FORM);
+    setOpen(true);
+  }
+
+  function openEdit(e: Emp) {
+    setEditing(e);
+    setForm({
+      nombre: e.nombre,
+      tipo: e.tipo,
+      estado: e.estado,
+      fecha_inicio: e.fecha_inicio?.slice(0, 10) ?? format(new Date(), "yyyy-MM-dd"),
     });
+    setOpen(true);
+  }
+
+  function closeModal() {
+    setOpen(false);
+    setEditing(null);
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!form.nombre.trim()) {
+      toast.error("El nombre es obligatorio");
+      return;
+    }
+    saveMut.mutate(form);
   }
 
   return (
@@ -68,61 +151,163 @@ function Emprendimientos() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Emprendimientos</h1>
-          <p className="text-sm text-muted-foreground">Gestiona los negocios que estás administrando.</p>
+          <p className="text-sm text-muted-foreground">
+            Gestiona los negocios que estás administrando.
+          </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" /> Nuevo</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Nuevo emprendimiento</DialogTitle></DialogHeader>
-            <form onSubmit={onSubmit} className="space-y-3">
-              <div><Label>Nombre</Label><Input name="nombre" required maxLength={120} /></div>
-              <div><Label>Tipo</Label><Input name="tipo" defaultValue="Tienda local" required maxLength={80} /></div>
-              <div><Label>Fecha de inicio</Label><Input type="date" name="fecha_inicio" defaultValue={format(new Date(), "yyyy-MM-dd")} required /></div>
-              <div>
-                <Label>Estado</Label>
-                <Select name="estado" defaultValue="activo">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="activo">Activo</SelectItem>
-                    <SelectItem value="pausado">Pausado</SelectItem>
-                    <SelectItem value="cerrado">Cerrado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="submit" className="w-full" disabled={createMut.isPending}>
-                {createMut.isPending ? "Guardando..." : "Crear"}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button className="gap-2" onClick={openCreate}>
+          <Plus className="h-4 w-4" /> Nuevo
+        </Button>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted-foreground">Cargando...</p> :
-       data.length === 0 ? (
-        <Card><CardContent className="p-10 text-center">
-          <StoreIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-          <p className="font-medium">Aún no tienes emprendimientos</p>
-          <p className="mt-1 text-sm text-muted-foreground">Crea tu primer emprendimiento para empezar a registrar actividades.</p>
-        </CardContent></Card>
-       ) : (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Cargando...</p>
+      ) : data.length === 0 ? (
+        <Card>
+          <CardContent className="p-10 text-center">
+            <StoreIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="font-medium">Aún no tienes emprendimientos</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Crea tu primer emprendimiento para empezar a registrar
+              actividades.
+            </p>
+            <Button className="mt-4" onClick={openCreate}>
+              Crear ahora
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.map(e => (
-            <Card key={e.id}>
+          {data.map((e) => (
+            <Card key={e.id} className="group hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <CardTitle className="text-base">{e.nombre}</CardTitle>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="truncate text-base">{e.nombre}</CardTitle>
                   <p className="mt-1 text-xs text-muted-foreground">{e.tipo}</p>
                 </div>
-                <Badge variant={e.estado === "activo" ? "default" : "secondary"}>{e.estado}</Badge>
+                <Badge variant={ESTADO_BADGE[e.estado] ?? "secondary"}>
+                  {e.estado}
+                </Badge>
               </CardHeader>
               <CardContent className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Inicio: {format(new Date(e.fecha_inicio), "dd MMM yyyy")}</p>
-                <Button size="icon" variant="ghost" onClick={() => delMut.mutate(e.id)}><Trash2 className="h-4 w-4" /></Button>
+                <p className="text-xs text-muted-foreground">
+                  Inicio:{" "}
+                  {format(new Date(e.fecha_inicio), "dd MMM yyyy")}
+                </p>
+                <div className="flex gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => openEdit(e)}
+                    title="Editar"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "¿Eliminar este emprendimiento y todas sus actividades?"
+                        )
+                      )
+                        delMut.mutate(e.id);
+                    }}
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
-       )}
+      )}
+
+      {/* Modal crear / editar */}
+      <Dialog open={open} onOpenChange={(v) => !v && closeModal()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editing ? "Editar emprendimiento" : "Nuevo emprendimiento"}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <Label>Nombre *</Label>
+              <Input
+                value={form.nombre}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, nombre: e.target.value }))
+                }
+                required
+                maxLength={120}
+                placeholder="Mi Negocio"
+              />
+            </div>
+            <div>
+              <Label>Tipo</Label>
+              <Input
+                value={form.tipo}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, tipo: e.target.value }))
+                }
+                maxLength={80}
+                placeholder="Tienda local, Restaurante, Servicios..."
+              />
+            </div>
+            <div>
+              <Label>Fecha de inicio</Label>
+              <Input
+                type="date"
+                value={form.fecha_inicio}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, fecha_inicio: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div>
+              <Label>Estado</Label>
+              <Select
+                value={form.estado}
+                onValueChange={(v) => setForm((f) => ({ ...f, estado: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="activo">Activo</SelectItem>
+                  <SelectItem value="pausado">Pausado</SelectItem>
+                  <SelectItem value="cerrado">Cerrado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={closeModal}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={saveMut.isPending}
+              >
+                {saveMut.isPending
+                  ? "Guardando..."
+                  : editing
+                    ? "Actualizar"
+                    : "Crear"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
