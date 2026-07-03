@@ -26,6 +26,7 @@ const signUpSchema = signInSchema.extend({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"tabs" | "forgot">("tabs");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -63,6 +64,22 @@ function AuthPage() {
     navigate({ to: "/dashboard" });
   }
 
+  async function handleForgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") || "").trim();
+    const parsed = z.string().email("Correo inválido").safeParse(email);
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Te enviamos un correo con las instrucciones.");
+    setMode("tabs");
+  }
+
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground md:flex">
@@ -89,27 +106,45 @@ function AuthPage() {
             <CardDescription>Inicia sesión o crea una cuenta gratis.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Iniciar sesión</TabsTrigger>
-                <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
-              </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4 pt-4">
-                  <div><Label htmlFor="si-email">Correo</Label><Input id="si-email" name="email" type="email" required /></div>
-                  <div><Label htmlFor="si-pw">Contraseña</Label><Input id="si-pw" name="password" type="password" required /></div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4 pt-4">
-                  <div><Label htmlFor="su-name">Nombre</Label><Input id="su-name" name="nombre" required /></div>
-                  <div><Label htmlFor="su-email">Correo</Label><Input id="su-email" name="email" type="email" required /></div>
-                  <div><Label htmlFor="su-pw">Contraseña</Label><Input id="su-pw" name="password" type="password" minLength={6} required /></div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Creando..." : "Crear cuenta"}</Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            {mode === "forgot" ? (
+              <form onSubmit={handleForgot} className="space-y-4 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+                <div><Label htmlFor="fp-email">Correo</Label><Input id="fp-email" name="email" type="email" required /></div>
+                <Button type="submit" className="w-full" disabled={loading}>{loading ? "Enviando..." : "Enviar enlace"}</Button>
+                <button type="button" onClick={() => setMode("tabs")} className="w-full text-sm text-muted-foreground hover:text-foreground">
+                  Volver a iniciar sesión
+                </button>
+              </form>
+            ) : (
+              <Tabs defaultValue="signin">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Iniciar sesión</TabsTrigger>
+                  <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
+                </TabsList>
+                <TabsContent value="signin">
+                  <form onSubmit={handleSignIn} className="space-y-4 pt-4">
+                    <div><Label htmlFor="si-email">Correo</Label><Input id="si-email" name="email" type="email" required /></div>
+                    <div><Label htmlFor="si-pw">Contraseña</Label><Input id="si-pw" name="password" type="password" required /></div>
+                    <div className="text-right">
+                      <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
+                  </form>
+                </TabsContent>
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignUp} className="space-y-4 pt-4">
+                    <div><Label htmlFor="su-name">Nombre</Label><Input id="su-name" name="nombre" required /></div>
+                    <div><Label htmlFor="su-email">Correo</Label><Input id="su-email" name="email" type="email" required /></div>
+                    <div><Label htmlFor="su-pw">Contraseña</Label><Input id="su-pw" name="password" type="password" minLength={6} required /></div>
+                    <Button type="submit" className="w-full" disabled={loading}>{loading ? "Creando..." : "Crear cuenta"}</Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            )}
           </CardContent>
         </Card>
       </div>
