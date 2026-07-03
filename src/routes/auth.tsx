@@ -26,6 +26,7 @@ const signUpSchema = signInSchema.extend({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"tabs" | "forgot">("tabs");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -61,6 +62,22 @@ function AuthPage() {
     if (error) { toast.error(error.message); return; }
     toast.success("Cuenta creada. ¡Bienvenido!");
     navigate({ to: "/dashboard" });
+  }
+
+  async function handleForgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") || "").trim();
+    const parsed = z.string().email("Correo inválido").safeParse(email);
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Te enviamos un correo con las instrucciones.");
+    setMode("tabs");
   }
 
   return (
