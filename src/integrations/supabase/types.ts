@@ -214,6 +214,94 @@ export type Database = {
           },
         ]
       }
+      metas: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          emprendimiento_id: string
+          estado: Database["public"]["Enums"]["meta_estado"]
+          fecha_limite: string | null
+          id: string
+          tipo: Database["public"]["Enums"]["meta_tipo"]
+          titulo: string
+          updated_at: string
+          user_id: string
+          valor_actual: number
+          valor_objetivo: number
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          emprendimiento_id: string
+          estado?: Database["public"]["Enums"]["meta_estado"]
+          fecha_limite?: string | null
+          id?: string
+          tipo?: Database["public"]["Enums"]["meta_tipo"]
+          titulo: string
+          updated_at?: string
+          user_id: string
+          valor_actual?: number
+          valor_objetivo?: number
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          emprendimiento_id?: string
+          estado?: Database["public"]["Enums"]["meta_estado"]
+          fecha_limite?: string | null
+          id?: string
+          tipo?: Database["public"]["Enums"]["meta_tipo"]
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+          valor_actual?: number
+          valor_objetivo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_emprendimiento_id_fkey"
+            columns: ["emprendimiento_id"]
+            isOneToOne: false
+            referencedRelation: "emprendimientos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notas: {
+        Row: {
+          contenido: string
+          created_at: string
+          emprendimiento_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contenido: string
+          created_at?: string
+          emprendimiento_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contenido?: string
+          created_at?: string
+          emprendimiento_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_emprendimiento_id_fkey"
+            columns: ["emprendimiento_id"]
+            isOneToOne: false
+            referencedRelation: "emprendimientos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           correo: string
@@ -273,6 +361,8 @@ export type Database = {
       alerta_nivel: "informativa" | "advertencia" | "critica"
       app_role: "admin" | "user"
       impacto_nivel: "bajo" | "medio" | "alto"
+      meta_estado: "activa" | "completada" | "cancelada"
+      meta_tipo: "ingresos" | "gastos" | "actividades" | "personalizada"
       tendencia: "sube" | "baja" | "estable"
       tipo_actividad: "ingreso" | "gasto" | "tarea" | "cliente"
     }
@@ -405,6 +495,8 @@ export const Constants = {
       alerta_nivel: ["informativa", "advertencia", "critica"],
       app_role: ["admin", "user"],
       impacto_nivel: ["bajo", "medio", "alto"],
+      meta_estado: ["activa", "completada", "cancelada"],
+      meta_tipo: ["ingresos", "gastos", "actividades", "personalizada"],
       tendencia: ["sube", "baja", "estable"],
       tipo_actividad: ["ingreso", "gasto", "tarea", "cliente"],
     },
