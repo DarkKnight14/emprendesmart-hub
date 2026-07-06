@@ -33,10 +33,10 @@ export const generarRecomendacionesIA = createServerFn({ method: "POST" })
 
     const actividades = acts ?? [];
     const ingresos = actividades
-      .filter((a) => a.tipo_actividad === "ingreso" || a.tipo_actividad === "venta")
+      .filter((a) => a.tipo_actividad === "ingreso")
       .reduce((s, a) => s + Number(a.monto || 0), 0);
     const gastos = actividades
-      .filter((a) => a.tipo_actividad === "gasto" || a.tipo_actividad === "inversion")
+      .filter((a) => a.tipo_actividad === "gasto")
       .reduce((s, a) => s + Number(a.monto || 0), 0);
     const margen = ingresos - gastos;
 
