@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSeguimientoRouteImport } from './routes/_authenticated/seguimiento'
 import { Route as AuthenticatedIndicadoresRouteImport } from './routes/_authenticated/indicadores'
 import { Route as AuthenticatedEmprendimientosRouteImport } from './routes/_authenticated/emprendimientos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -39,6 +40,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSeguimientoRoute =
+  AuthenticatedSeguimientoRouteImport.update({
+    id: '/seguimiento',
+    path: '/seguimiento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedIndicadoresRoute =
   AuthenticatedIndicadoresRouteImport.update({
     id: '/indicadores',
@@ -84,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emprendimientos': typeof AuthenticatedEmprendimientosRoute
   '/indicadores': typeof AuthenticatedIndicadoresRoute
+  '/seguimiento': typeof AuthenticatedSeguimientoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emprendimientos': typeof AuthenticatedEmprendimientosRoute
   '/indicadores': typeof AuthenticatedIndicadoresRoute
+  '/seguimiento': typeof AuthenticatedSeguimientoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +117,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/emprendimientos': typeof AuthenticatedEmprendimientosRoute
   '/_authenticated/indicadores': typeof AuthenticatedIndicadoresRoute
+  '/_authenticated/seguimiento': typeof AuthenticatedSeguimientoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/emprendimientos'
     | '/indicadores'
+    | '/seguimiento'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/emprendimientos'
     | '/indicadores'
+    | '/seguimiento'
   id:
     | '__root__'
     | '/'
@@ -144,6 +156,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/emprendimientos'
     | '/_authenticated/indicadores'
+    | '/_authenticated/seguimiento'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -182,6 +195,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/seguimiento': {
+      id: '/_authenticated/seguimiento'
+      path: '/seguimiento'
+      fullPath: '/seguimiento'
+      preLoaderRoute: typeof AuthenticatedSeguimientoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/indicadores': {
       id: '/_authenticated/indicadores'
@@ -235,6 +255,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmprendimientosRoute: typeof AuthenticatedEmprendimientosRoute
   AuthenticatedIndicadoresRoute: typeof AuthenticatedIndicadoresRoute
+  AuthenticatedSeguimientoRoute: typeof AuthenticatedSeguimientoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -244,6 +265,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmprendimientosRoute: AuthenticatedEmprendimientosRoute,
   AuthenticatedIndicadoresRoute: AuthenticatedIndicadoresRoute,
+  AuthenticatedSeguimientoRoute: AuthenticatedSeguimientoRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

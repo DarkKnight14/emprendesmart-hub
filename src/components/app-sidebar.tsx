@@ -1,6 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard, ClipboardList, Store, Bell, BarChart3, Settings, LogOut,
+  LayoutDashboard, ClipboardList, Store, Bell, BarChart3, Settings, LogOut, LineChart,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -13,6 +13,7 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Actividades", url: "/actividades", icon: ClipboardList },
   { title: "Emprendimientos", url: "/emprendimientos", icon: Store },
+  { title: "Seguimiento", url: "/seguimiento", icon: LineChart },
   { title: "Indicadores", url: "/indicadores", icon: BarChart3 },
   { title: "Alertas", url: "/alertas", icon: Bell },
 ] as const;
