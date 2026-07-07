@@ -377,19 +377,26 @@ function Seguimiento() {
               </Card>
 
               {reco && (
-                <Card className="border-primary/40">
+                <Card
+                  className="overflow-hidden border-primary/30"
+                  style={{ boxShadow: "var(--shadow-elegant)" }}
+                >
+                  <div className="h-1 w-full" style={{ backgroundImage: "var(--gradient-primary)" }} />
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" /> Análisis con IA
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <span className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground" style={{ backgroundImage: "var(--gradient-primary)" }}>
+                        <Sparkles className="h-4 w-4" />
+                      </span>
+                      Análisis con IA
                     </CardTitle>
-                    <CardDescription>{reco.resumen}</CardDescription>
+                    <CardDescription className="pt-1">{reco.resumen}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {reco.recomendaciones.map((r, i) => (
-                      <div key={i} className="rounded-lg border p-3">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{r.titulo}</p>
-                          <Badge variant={prioColor(r.prioridad)} className="text-[10px]">{r.prioridad}</Badge>
+                      <div key={i} className="rounded-xl border bg-muted/40 p-3 transition-colors hover:bg-muted/70">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{r.titulo}</p>
+                          <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
                       </div>
