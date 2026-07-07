@@ -275,59 +275,67 @@ function Seguimiento() {
   const empActual = emps.find((e) => e.id === empId);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Seguimiento de empresa</h1>
-          <p className="text-sm text-muted-foreground">
-            Recomendaciones, evolución, metas y bitácora de cada emprendimiento.
-          </p>
-        </div>
-        <div className="min-w-56">
-          <Label className="text-xs text-muted-foreground">Emprendimiento</Label>
-          <Select value={empId} onValueChange={setEmpId}>
-            <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
-            <SelectContent>
-              {emps.map((e) => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
-            </SelectContent>
-          </Select>
+    <div className="mx-auto max-w-6xl space-y-8 pb-10">
+      {/* Hero header */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-primary-foreground"
+        style={{ backgroundImage: "var(--gradient-primary)", boxShadow: "var(--shadow-elegant)" }}
+      >
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" aria-hidden />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/10 blur-2xl" aria-hidden />
+        <div className="relative grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="min-w-0">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <TrendingUp className="h-3.5 w-3.5" /> Panel de seguimiento
+            </div>
+            <h1 className="truncate text-3xl font-extrabold tracking-tight sm:text-4xl">
+              {empActual?.nombre ?? "Seguimiento de empresa"}
+            </h1>
+            <p className="mt-1 text-sm text-primary-foreground/80">
+              Recomendaciones, evolución, metas y bitácora — todo en un solo lugar.
+            </p>
+          </div>
+          <div className="min-w-56 rounded-xl bg-background/95 p-3 text-foreground shadow-lg backdrop-blur">
+            <Label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Emprendimiento
+            </Label>
+            <Select value={empId} onValueChange={setEmpId}>
+              <SelectTrigger className="mt-1 border-0 bg-transparent px-0 focus:ring-0">
+                <SelectValue placeholder="Selecciona..." />
+              </SelectTrigger>
+              <SelectContent>
+                {emps.map((e) => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       {!empActual ? (
-        <Card><CardContent className="p-10 text-center text-sm text-muted-foreground">
-          Crea un emprendimiento primero.
+        <Card className="border-dashed"><CardContent className="p-12 text-center text-sm text-muted-foreground">
+          Crea un emprendimiento primero para empezar a hacer seguimiento.
         </CardContent></Card>
       ) : (
         <>
           {/* Métricas */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Ingresos</p>
-              <p className="text-2xl font-bold text-emerald-600">${totals.ingresos.toFixed(2)}</p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Gastos</p>
-              <p className="text-2xl font-bold text-red-600">${totals.gastos.toFixed(2)}</p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Margen</p>
-              <p className={`text-2xl font-bold ${totals.margen >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                ${totals.margen.toFixed(2)}
-              </p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Actividades</p>
-              <p className="text-2xl font-bold">{totals.total}</p>
-            </CardContent></Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard label="Ingresos" value={`$${totals.ingresos.toFixed(2)}`} tone="success" icon={<TrendingUp className="h-4 w-4" />} />
+            <KpiCard label="Gastos" value={`$${totals.gastos.toFixed(2)}`} tone="destructive" icon={<AlertTriangle className="h-4 w-4" />} />
+            <KpiCard
+              label="Margen"
+              value={`$${totals.margen.toFixed(2)}`}
+              tone={totals.margen >= 0 ? "success" : "destructive"}
+              icon={<Sparkles className="h-4 w-4" />}
+            />
+            <KpiCard label="Actividades" value={String(totals.total)} tone="primary" icon={<Target className="h-4 w-4" />} />
           </div>
 
           <Tabs defaultValue="recomendaciones">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="recomendaciones"><Lightbulb className="mr-1 h-4 w-4" />Recomendaciones</TabsTrigger>
-              <TabsTrigger value="evolucion"><TrendingUp className="mr-1 h-4 w-4" />Evolución</TabsTrigger>
-              <TabsTrigger value="metas"><Target className="mr-1 h-4 w-4" />Metas</TabsTrigger>
-              <TabsTrigger value="bitacora"><StickyNote className="mr-1 h-4 w-4" />Bitácora</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 sm:grid-cols-4">
+              <TabsTrigger value="recomendaciones" className="rounded-lg data-[state=active]:shadow-sm"><Lightbulb className="mr-1.5 h-4 w-4" />Recomendaciones</TabsTrigger>
+              <TabsTrigger value="evolucion" className="rounded-lg data-[state=active]:shadow-sm"><TrendingUp className="mr-1.5 h-4 w-4" />Evolución</TabsTrigger>
+              <TabsTrigger value="metas" className="rounded-lg data-[state=active]:shadow-sm"><Target className="mr-1.5 h-4 w-4" />Metas</TabsTrigger>
+              <TabsTrigger value="bitacora" className="rounded-lg data-[state=active]:shadow-sm"><StickyNote className="mr-1.5 h-4 w-4" />Bitácora</TabsTrigger>
             </TabsList>
 
             {/* ---------- RECOMENDACIONES ---------- */}
