@@ -409,22 +409,33 @@ function Seguimiento() {
             {/* ---------- EVOLUCIÓN ---------- */}
             <TabsContent value="evolucion" className="space-y-4">
               <Card>
-                <CardHeader><CardTitle className="text-base">KPIs mensuales (6 meses)</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-base">KPIs mensuales</CardTitle>
+                  <CardDescription>Ingresos, gastos y margen de los últimos 6 meses.</CardDescription>
+                </CardHeader>
                 <CardContent className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={monthly}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="mes" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="ingresos" stroke="#10b981" strokeWidth={2} />
-                      <Line type="monotone" dataKey="gastos" stroke="#ef4444" strokeWidth={2} />
-                      <Line type="monotone" dataKey="margen" stroke="#6366f1" strokeWidth={2} />
+                    <LineChart data={monthly} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.6} />
+                      <XAxis dataKey="mes" fontSize={12} stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} />
+                      <YAxis fontSize={12} stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          background: "var(--color-popover)",
+                          border: "1px solid var(--color-border)",
+                          borderRadius: 12,
+                          fontSize: 12,
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Line type="monotone" dataKey="ingresos" stroke="var(--color-success)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="gastos" stroke="var(--color-destructive)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="margen" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+
 
               <Card>
                 <CardHeader><CardTitle className="text-base">Línea de tiempo de actividades</CardTitle></CardHeader>
