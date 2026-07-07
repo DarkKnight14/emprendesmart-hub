@@ -62,10 +62,10 @@ type Reco = {
 };
 
 const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
-  ingreso: "bg-emerald-500",
-  gasto: "bg-red-500",
-  tarea: "bg-blue-500",
-  cliente: "bg-purple-500",
+  ingreso: "bg-success",
+  gasto: "bg-destructive",
+  tarea: "bg-info",
+  cliente: "bg-chart-5",
 };
 
 function Seguimiento() {
