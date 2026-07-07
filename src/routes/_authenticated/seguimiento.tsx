@@ -62,10 +62,10 @@ type Reco = {
 };
 
 const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
-  ingreso: "bg-emerald-500",
-  gasto: "bg-red-500",
-  tarea: "bg-blue-500",
-  cliente: "bg-purple-500",
+  ingreso: "bg-success",
+  gasto: "bg-destructive",
+  tarea: "bg-info",
+  cliente: "bg-chart-5",
 };
 
 function Seguimiento() {
@@ -275,59 +275,67 @@ function Seguimiento() {
   const empActual = emps.find((e) => e.id === empId);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Seguimiento de empresa</h1>
-          <p className="text-sm text-muted-foreground">
-            Recomendaciones, evolución, metas y bitácora de cada emprendimiento.
-          </p>
-        </div>
-        <div className="min-w-56">
-          <Label className="text-xs text-muted-foreground">Emprendimiento</Label>
-          <Select value={empId} onValueChange={setEmpId}>
-            <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
-            <SelectContent>
-              {emps.map((e) => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
-            </SelectContent>
-          </Select>
+    <div className="mx-auto max-w-6xl space-y-8 pb-10">
+      {/* Hero header */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-primary-foreground"
+        style={{ backgroundImage: "var(--gradient-primary)", boxShadow: "var(--shadow-elegant)" }}
+      >
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" aria-hidden />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/10 blur-2xl" aria-hidden />
+        <div className="relative grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="min-w-0">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <TrendingUp className="h-3.5 w-3.5" /> Panel de seguimiento
+            </div>
+            <h1 className="truncate text-3xl font-extrabold tracking-tight sm:text-4xl">
+              {empActual?.nombre ?? "Seguimiento de empresa"}
+            </h1>
+            <p className="mt-1 text-sm text-primary-foreground/80">
+              Recomendaciones, evolución, metas y bitácora — todo en un solo lugar.
+            </p>
+          </div>
+          <div className="min-w-56 rounded-xl bg-background/95 p-3 text-foreground shadow-lg backdrop-blur">
+            <Label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Emprendimiento
+            </Label>
+            <Select value={empId} onValueChange={setEmpId}>
+              <SelectTrigger className="mt-1 border-0 bg-transparent px-0 focus:ring-0">
+                <SelectValue placeholder="Selecciona..." />
+              </SelectTrigger>
+              <SelectContent>
+                {emps.map((e) => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       {!empActual ? (
-        <Card><CardContent className="p-10 text-center text-sm text-muted-foreground">
-          Crea un emprendimiento primero.
+        <Card className="border-dashed"><CardContent className="p-12 text-center text-sm text-muted-foreground">
+          Crea un emprendimiento primero para empezar a hacer seguimiento.
         </CardContent></Card>
       ) : (
         <>
           {/* Métricas */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Ingresos</p>
-              <p className="text-2xl font-bold text-emerald-600">${totals.ingresos.toFixed(2)}</p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Gastos</p>
-              <p className="text-2xl font-bold text-red-600">${totals.gastos.toFixed(2)}</p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Margen</p>
-              <p className={`text-2xl font-bold ${totals.margen >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                ${totals.margen.toFixed(2)}
-              </p>
-            </CardContent></Card>
-            <Card><CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Actividades</p>
-              <p className="text-2xl font-bold">{totals.total}</p>
-            </CardContent></Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard label="Ingresos" value={`$${totals.ingresos.toFixed(2)}`} tone="success" icon={<TrendingUp className="h-4 w-4" />} />
+            <KpiCard label="Gastos" value={`$${totals.gastos.toFixed(2)}`} tone="destructive" icon={<AlertTriangle className="h-4 w-4" />} />
+            <KpiCard
+              label="Margen"
+              value={`$${totals.margen.toFixed(2)}`}
+              tone={totals.margen >= 0 ? "success" : "destructive"}
+              icon={<Sparkles className="h-4 w-4" />}
+            />
+            <KpiCard label="Actividades" value={String(totals.total)} tone="primary" icon={<Target className="h-4 w-4" />} />
           </div>
 
           <Tabs defaultValue="recomendaciones">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="recomendaciones"><Lightbulb className="mr-1 h-4 w-4" />Recomendaciones</TabsTrigger>
-              <TabsTrigger value="evolucion"><TrendingUp className="mr-1 h-4 w-4" />Evolución</TabsTrigger>
-              <TabsTrigger value="metas"><Target className="mr-1 h-4 w-4" />Metas</TabsTrigger>
-              <TabsTrigger value="bitacora"><StickyNote className="mr-1 h-4 w-4" />Bitácora</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 sm:grid-cols-4">
+              <TabsTrigger value="recomendaciones" className="rounded-lg data-[state=active]:shadow-sm"><Lightbulb className="mr-1.5 h-4 w-4" />Recomendaciones</TabsTrigger>
+              <TabsTrigger value="evolucion" className="rounded-lg data-[state=active]:shadow-sm"><TrendingUp className="mr-1.5 h-4 w-4" />Evolución</TabsTrigger>
+              <TabsTrigger value="metas" className="rounded-lg data-[state=active]:shadow-sm"><Target className="mr-1.5 h-4 w-4" />Metas</TabsTrigger>
+              <TabsTrigger value="bitacora" className="rounded-lg data-[state=active]:shadow-sm"><StickyNote className="mr-1.5 h-4 w-4" />Bitácora</TabsTrigger>
             </TabsList>
 
             {/* ---------- RECOMENDACIONES ---------- */}
@@ -344,35 +352,51 @@ function Seguimiento() {
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {reglas.map((r, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
-                      <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${r.prioridad === "alta" ? "text-destructive" : r.prioridad === "media" ? "text-amber-500" : "text-muted-foreground"}`} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{r.titulo}</p>
-                          <Badge variant={prioColor(r.prioridad)} className="text-[10px]">{r.prioridad}</Badge>
+                  {reglas.map((r, i) => {
+                    const tone = r.prioridad === "alta" ? "destructive" : r.prioridad === "media" ? "warning" : "muted-foreground";
+                    return (
+                      <div
+                        key={i}
+                        className="group flex items-start gap-3 rounded-xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                        style={{ borderLeft: `4px solid var(--color-${tone})` }}
+                      >
+                        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-${tone}`} style={{ backgroundColor: `color-mix(in oklab, var(--color-${tone}) 15%, transparent)` }}>
+                          <AlertTriangle className="h-4 w-4" />
                         </div>
-                        <p className="text-sm text-muted-foreground">{r.detalle}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-semibold">{r.titulo}</p>
+                            <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
 
               {reco && (
-                <Card className="border-primary/40">
+                <Card
+                  className="overflow-hidden border-primary/30"
+                  style={{ boxShadow: "var(--shadow-elegant)" }}
+                >
+                  <div className="h-1 w-full" style={{ backgroundImage: "var(--gradient-primary)" }} />
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" /> Análisis con IA
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <span className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground" style={{ backgroundImage: "var(--gradient-primary)" }}>
+                        <Sparkles className="h-4 w-4" />
+                      </span>
+                      Análisis con IA
                     </CardTitle>
-                    <CardDescription>{reco.resumen}</CardDescription>
+                    <CardDescription className="pt-1">{reco.resumen}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {reco.recomendaciones.map((r, i) => (
-                      <div key={i} className="rounded-lg border p-3">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{r.titulo}</p>
-                          <Badge variant={prioColor(r.prioridad)} className="text-[10px]">{r.prioridad}</Badge>
+                      <div key={i} className="rounded-xl border bg-muted/40 p-3 transition-colors hover:bg-muted/70">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{r.titulo}</p>
+                          <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
                       </div>
@@ -385,22 +409,33 @@ function Seguimiento() {
             {/* ---------- EVOLUCIÓN ---------- */}
             <TabsContent value="evolucion" className="space-y-4">
               <Card>
-                <CardHeader><CardTitle className="text-base">KPIs mensuales (6 meses)</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-base">KPIs mensuales</CardTitle>
+                  <CardDescription>Ingresos, gastos y margen de los últimos 6 meses.</CardDescription>
+                </CardHeader>
                 <CardContent className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={monthly}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="mes" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="ingresos" stroke="#10b981" strokeWidth={2} />
-                      <Line type="monotone" dataKey="gastos" stroke="#ef4444" strokeWidth={2} />
-                      <Line type="monotone" dataKey="margen" stroke="#6366f1" strokeWidth={2} />
+                    <LineChart data={monthly} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.6} />
+                      <XAxis dataKey="mes" fontSize={12} stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} />
+                      <YAxis fontSize={12} stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          background: "var(--color-popover)",
+                          border: "1px solid var(--color-border)",
+                          borderRadius: 12,
+                          fontSize: 12,
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Line type="monotone" dataKey="ingresos" stroke="var(--color-success)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="gastos" stroke="var(--color-destructive)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="margen" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+
 
               <Card>
                 <CardHeader><CardTitle className="text-base">Línea de tiempo de actividades</CardTitle></CardHeader>
@@ -587,3 +622,43 @@ function Seguimiento() {
     </div>
   );
 }
+
+type KpiTone = "success" | "destructive" | "primary" | "warning" | "info";
+function KpiCard({
+  label, value, tone, icon,
+}: { label: string; value: string; tone: KpiTone; icon: React.ReactNode }) {
+  return (
+    <Card
+      className="relative overflow-hidden border-0 transition-all hover:-translate-y-0.5"
+      style={{ boxShadow: "var(--shadow-card)" }}
+    >
+      <div
+        className="absolute inset-x-0 top-0 h-1"
+        style={{ backgroundColor: `var(--color-${tone})` }}
+      />
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p
+              className="mt-1 truncate text-2xl font-extrabold tracking-tight"
+              style={{ color: `var(--color-${tone})` }}
+            >
+              {value}
+            </p>
+          </div>
+          <div
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+            style={{
+              color: `var(--color-${tone})`,
+              backgroundColor: `color-mix(in oklab, var(--color-${tone}) 14%, transparent)`,
+            }}
+          >
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
