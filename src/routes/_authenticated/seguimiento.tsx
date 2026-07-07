@@ -354,7 +354,7 @@ function Seguimiento() {
                 <CardContent className="space-y-2">
                   {reglas.map((r, i) => (
                     <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
-                      <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${r.prioridad === "alta" ? "text-destructive" : r.prioridad === "media" ? "text-amber-500" : "text-muted-foreground"}`} />
+                      <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${r.prioridad === "alta" ? "text-destructive" : r.prioridad === "media" ? "text-warning" : "text-muted-foreground"}`} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className="font-medium">{r.titulo}</p>
