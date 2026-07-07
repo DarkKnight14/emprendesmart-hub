@@ -622,3 +622,43 @@ function Seguimiento() {
     </div>
   );
 }
+
+type KpiTone = "success" | "destructive" | "primary" | "warning" | "info";
+function KpiCard({
+  label, value, tone, icon,
+}: { label: string; value: string; tone: KpiTone; icon: React.ReactNode }) {
+  return (
+    <Card
+      className="relative overflow-hidden border-0 transition-all hover:-translate-y-0.5"
+      style={{ boxShadow: "var(--shadow-card)" }}
+    >
+      <div
+        className="absolute inset-x-0 top-0 h-1"
+        style={{ backgroundColor: `var(--color-${tone})` }}
+      />
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p
+              className="mt-1 truncate text-2xl font-extrabold tracking-tight"
+              style={{ color: `var(--color-${tone})` }}
+            >
+              {value}
+            </p>
+          </div>
+          <div
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+            style={{
+              color: `var(--color-${tone})`,
+              backgroundColor: `color-mix(in oklab, var(--color-${tone}) 14%, transparent)`,
+            }}
+          >
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
