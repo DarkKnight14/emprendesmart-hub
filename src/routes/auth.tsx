@@ -157,7 +157,7 @@ function AuthPage() {
                   <form onSubmit={handleSignUp} className="space-y-4 pt-4">
                     <div><Label htmlFor="su-name">Nombre</Label><Input id="su-name" name="nombre" required /></div>
                     <div><Label htmlFor="su-email">Correo</Label><Input id="su-email" name="email" type="email" required /></div>
-                    <div><Label htmlFor="su-pw">Contraseña</Label><Input id="su-pw" name="password" type="password" minLength={6} required /></div>
+                    <div><Label htmlFor="su-pw">Contraseña</Label><PasswordInput id="su-pw" name="password" minLength={6} required /></div>
                     <Button type="submit" className="w-full" disabled={loading}>{loading ? "Creando..." : "Crear cuenta"}</Button>
                   </form>
                 </TabsContent>
