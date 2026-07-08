@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, ArrowLeft } from "lucide-react";
+import { Store, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -22,6 +22,24 @@ const signInSchema = z.object({
 const signUpSchema = signInSchema.extend({
   nombre: z.string().trim().min(2, "Tu nombre").max(80),
 });
+
+function PasswordInput({ id, name, required, minLength }: { id: string; name: string; required?: boolean; minLength?: number }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <Input id={id} name={name} type={visible ? "text" : "password"} required={required} minLength={minLength} className="pr-10" />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground focus:outline-none"
+        aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+      >
+        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -126,7 +144,7 @@ function AuthPage() {
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4 pt-4">
                     <div><Label htmlFor="si-email">Correo</Label><Input id="si-email" name="email" type="email" required /></div>
-                    <div><Label htmlFor="si-pw">Contraseña</Label><Input id="si-pw" name="password" type="password" required /></div>
+                    <div><Label htmlFor="si-pw">Contraseña</Label><PasswordInput id="si-pw" name="password" required /></div>
                     <div className="text-right">
                       <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
                         ¿Olvidaste tu contraseña?
@@ -139,7 +157,7 @@ function AuthPage() {
                   <form onSubmit={handleSignUp} className="space-y-4 pt-4">
                     <div><Label htmlFor="su-name">Nombre</Label><Input id="su-name" name="nombre" required /></div>
                     <div><Label htmlFor="su-email">Correo</Label><Input id="su-email" name="email" type="email" required /></div>
-                    <div><Label htmlFor="su-pw">Contraseña</Label><Input id="su-pw" name="password" type="password" minLength={6} required /></div>
+                    <div><Label htmlFor="su-pw">Contraseña</Label><PasswordInput id="su-pw" name="password" minLength={6} required /></div>
                     <Button type="submit" className="w-full" disabled={loading}>{loading ? "Creando..." : "Crear cuenta"}</Button>
                   </form>
                 </TabsContent>
