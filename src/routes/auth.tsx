@@ -144,7 +144,7 @@ function AuthPage() {
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4 pt-4">
                     <div><Label htmlFor="si-email">Correo</Label><Input id="si-email" name="email" type="email" required /></div>
-                    <div><Label htmlFor="si-pw">Contraseña</Label><Input id="si-pw" name="password" type="password" required /></div>
+                    <div><Label htmlFor="si-pw">Contraseña</Label><PasswordInput id="si-pw" name="password" required /></div>
                     <div className="text-right">
                       <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
                         ¿Olvidaste tu contraseña?
