@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+emprendesmart-hub-repo/
+
+emprendesmart-hub/
+
+backendsrc
+
+package-lock.json
