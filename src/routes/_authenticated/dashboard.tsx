@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { activitiesApi } from "@/integrations/api/activities";
-import { businessApi } from "@/integrations/api/business";
+import { activitiesApi, type Actividad } from "@/integrations/api/activities";
+import { businessApi, type Emprendimiento } from "@/integrations/api/business";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +13,7 @@ import {
 import { format, startOfMonth, subMonths, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — EmprendeSmart" }] }),
@@ -41,17 +41,20 @@ function KpiSkeleton() {
 function Dashboard() {
   const [selectedEmpId, setSelectedEmpId] = useState<string>("");
 
-  const { data: emprendimientos = [], isLoading: empsLoading } = useQuery({
+  const { data: emprendimientos = [], isLoading: empsLoading } = useQuery<Emprendimiento[], Error>({
     queryKey: ["emprendimientos-dashboard"],
     queryFn: () => businessApi.list(),
-    onSuccess: (data) => {
-      if (data.length > 0 && !selectedEmpId) setSelectedEmpId(data[0].id);
-    },
-  } as Parameters<typeof useQuery>[0]);
+  });
+
+  useEffect(() => {
+    if (!selectedEmpId && emprendimientos.length > 0) {
+      setSelectedEmpId(emprendimientos[0].id);
+    }
+  }, [emprendimientos, selectedEmpId]);
 
   const activeEmpId = selectedEmpId || emprendimientos[0]?.id || "";
 
-  const { data: actividades = [], isLoading: actLoading } = useQuery({
+  const { data: actividades = [], isLoading: actLoading } = useQuery<Actividad[], Error>({
     queryKey: ["actividades-all", activeEmpId],
     queryFn: () => activitiesApi.list(activeEmpId),
     enabled: !!activeEmpId,
@@ -67,7 +70,7 @@ function Dashboard() {
     return dt >= m && dt < startOfMonth(subMonths(m, -1));
   };
 
-  const sum = (arr: typeof actividades, tipo: string) =>
+  const sum = (arr: Actividad[], tipo: string) =>
     arr.filter((a) => a.tipo_actividad === tipo).reduce((s, a) => s + Number(a.monto), 0);
 
   const thisM = actividades.filter((a) => isInMonth(a.fecha, thisMonth));
@@ -84,7 +87,7 @@ function Dashboard() {
   const pct = (a: number, b: number) => b === 0 ? (a > 0 ? 100 : 0) : Math.round(((a - b) / b) * 100);
 
   // Tendencia 6 meses
-  const trend = [];
+  const trend: Array<{ mes: string; ingresos: number; gastos: number }> = [];
   for (let i = 5; i >= 0; i--) {
     const m = startOfMonth(subMonths(now, i));
     const arr = actividades.filter((a) => isInMonth(a.fecha, m));
