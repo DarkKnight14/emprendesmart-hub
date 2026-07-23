@@ -259,7 +259,7 @@ function Seguimiento() {
     if (!empId) return;
     setLoadingReco(true);
     try {
-      const r = await generar({ data: { emprendimientoId: empId } });
+      const r = await generar({ data: { emprendimientoId: empId, acts } });
       setReco(r as Reco);
       toast.success("Análisis IA generado");
     } catch (e) {

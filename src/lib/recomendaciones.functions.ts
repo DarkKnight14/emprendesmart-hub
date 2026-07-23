@@ -1,99 +1,105 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 
-type Input = { emprendimientoId: string };
+const actSchema = z.object({
+  id: z.string(),
+  fecha: z.string(),
+  descripcion: z.string(),
+  monto: z.number(),
+  tipo_actividad: z.enum(["ingreso", "gasto", "tarea", "cliente"]),
+});
+
+const schema = z.object({
+  emprendimientoId: z.string(),
+  acts: z.array(actSchema),
+});
 
 export const generarRecomendacionesIA = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: Input) => {
-    if (!data?.emprendimientoId) throw new Error("emprendimientoId requerido");
-    return data;
-  })
-  .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Falta LOVABLE_API_KEY");
+  .validator(schema)
+  .handler(async ({ data }) => {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Falta ANTHROPIC_API_KEY en las variables de entorno del servidor");
 
-    const { supabase, userId } = context;
+    const { acts } = data;
 
-    const { data: emp } = await supabase
-      .from("emprendimientos")
-      .select("nombre, tipo, estado, fecha_inicio")
-      .eq("id", data.emprendimientoId)
-      .eq("user_id", userId)
-      .maybeSingle();
+    const ingresos = acts.filter((a) => a.tipo_actividad === "ingreso").reduce((s, a) => s + Number(a.monto), 0);
+    const gastos   = acts.filter((a) => a.tipo_actividad === "gasto").reduce((s, a) => s + Number(a.monto), 0);
+    const margen   = ingresos - gastos;
+    const total    = acts.length;
 
-    if (!emp) throw new Error("Emprendimiento no encontrado");
+    const prompt = `Eres un asesor financiero experto para emprendedores latinoamericanos.
 
-    const { data: acts } = await supabase
-      .from("actividades")
-      .select("tipo_actividad, monto, descripcion, fecha, impacto")
-      .eq("emprendimiento_id", data.emprendimientoId)
-      .order("fecha", { ascending: false })
-      .limit(80);
+Analiza los siguientes datos del negocio y genera recomendaciones concretas:
 
-    const actividades = acts ?? [];
-    const ingresos = actividades
-      .filter((a) => a.tipo_actividad === "ingreso")
-      .reduce((s, a) => s + Number(a.monto || 0), 0);
-    const gastos = actividades
-      .filter((a) => a.tipo_actividad === "gasto")
-      .reduce((s, a) => s + Number(a.monto || 0), 0);
-    const margen = ingresos - gastos;
+MÉTRICAS:
+- Ingresos totales: $${ingresos.toLocaleString("es-CO")}
+- Gastos totales: $${gastos.toLocaleString("es-CO")}
+- Margen neto: $${margen.toLocaleString("es-CO")}
+- Total de actividades: ${total}
 
-    const resumen = {
-      nombre: emp.nombre,
-      tipo: emp.tipo,
-      estado: emp.estado,
-      total_actividades: actividades.length,
-      ingresos_totales: ingresos,
-      gastos_totales: gastos,
-      margen,
-      ultimas: actividades.slice(0, 20).map((a) => ({
-        tipo: a.tipo_actividad,
-        monto: Number(a.monto),
-        desc: a.descripcion,
-        fecha: a.fecha,
-      })),
-    };
+ÚLTIMAS ACTIVIDADES (hasta 20):
+${JSON.stringify(
+  acts.slice(0, 20).map((a) => ({
+    fecha: a.fecha,
+    tipo: a.tipo_actividad,
+    monto: a.monto,
+    descripcion: a.descripcion,
+  })),
+  null,
+  2
+)}
 
-    const prompt = `Eres un asesor experto en pequeños negocios. Analiza los datos de este emprendimiento y entrega entre 3 y 5 recomendaciones concretas, breves y accionables en español. Cada recomendación debe ser específica a los datos observados (no genérica). Responde ÚNICAMENTE con un JSON válido con esta forma:
-{"resumen": "1-2 frases", "recomendaciones": [{"titulo": "...", "detalle": "...", "prioridad": "alta|media|baja"}]}
+Responde ÚNICAMENTE con este JSON exacto (sin markdown, sin texto adicional):
+{
+  "resumen": "Resumen del estado del negocio en 2-3 oraciones directas",
+  "recomendaciones": [
+    {
+      "titulo": "Título corto y accionable",
+      "detalle": "Explicación práctica y específica en máximo 2 oraciones",
+      "prioridad": "alta"
+    }
+  ]
+}
 
-Datos del emprendimiento:
-${JSON.stringify(resumen, null, 2)}`;
+Genera entre 3 y 5 recomendaciones. Prioridad puede ser: "alta", "media" o "baja".`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Lovable-API-Key": key,
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "Devuelves solo JSON válido, sin markdown ni texto adicional." },
-          { role: "user", content: prompt },
-        ],
+        model: "claude-sonnet-4-6",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: prompt }],
       }),
     });
 
-    if (res.status === 429) throw new Error("Límite de uso de IA alcanzado. Intenta más tarde.");
-    if (res.status === 402) throw new Error("Se agotaron los créditos de IA de tu cuenta.");
-    if (!res.ok) throw new Error(`Error IA (${res.status})`);
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Error API Claude: ${res.status} — ${err}`);
+    }
 
-    const json = await res.json();
-    const raw: string = json?.choices?.[0]?.message?.content ?? "";
-    const cleaned = raw.replace(/^```json\s*|```$/g, "").trim();
+    const completion = await res.json();
+    const text: string = completion.content?.[0]?.text ?? "";
+
+    let parsed: {
+      resumen: string;
+      recomendaciones: { titulo: string; detalle: string; prioridad: "alta" | "media" | "baja" }[];
+    };
 
     try {
-      const parsed = JSON.parse(cleaned);
-      return { ok: true as const, ...parsed, metricas: { ingresos, gastos, margen, total: actividades.length } };
+      const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      parsed = JSON.parse(clean);
     } catch {
-      return {
-        ok: true as const,
-        resumen: raw.slice(0, 300),
-        recomendaciones: [],
-        metricas: { ingresos, gastos, margen, total: actividades.length },
-      };
+      throw new Error("Error procesando la respuesta de IA. Intenta de nuevo.");
     }
+
+    return {
+      resumen: parsed.resumen ?? "",
+      recomendaciones: parsed.recomendaciones ?? [],
+      metricas: { ingresos, gastos, margen, total },
+    };
   });
