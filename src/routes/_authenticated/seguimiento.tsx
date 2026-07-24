@@ -252,19 +252,6 @@ function Seguimiento() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notas", empId] }),
   });
 
-  async function pedirIA() {
-    if (!empId) return;
-    setLoadingReco(true);
-    try {
-      const r = await generar({ data: { emprendimientoId: empId, acts } });
-      setReco(r as Reco);
-      toast.success("Análisis IA generado");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setLoadingReco(false);
-    }
-  }
 
   const prioColor = (p: "alta" | "media" | "baja") =>
     p === "alta" ? "destructive" : p === "media" ? "default" : "secondary";
