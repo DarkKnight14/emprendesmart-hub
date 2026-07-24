@@ -226,8 +226,8 @@ function Seguimiento() {
   });
 
 
-  const prioColor = (p: "alta" | "media" | "baja") =>
-    p === "alta" ? "destructive" : p === "media" ? "default" : "secondary";
+
+
 
   const empActual = emps.find((e) => e.id === empId);
 
