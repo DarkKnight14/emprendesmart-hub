@@ -55,11 +55,8 @@ type Meta = {
 };
 type Nota = { id: string; contenido: string; created_at: string };
 
-type Reco = {
-  resumen: string;
-  recomendaciones: { titulo: string; detalle: string; prioridad: "alta" | "media" | "baja" }[];
-  metricas: { ingresos: number; gastos: number; margen: number; total: number };
-};
+
+
 
 const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
   ingreso: "bg-success",
