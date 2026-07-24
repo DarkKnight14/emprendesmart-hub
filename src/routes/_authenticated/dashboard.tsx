@@ -158,12 +158,13 @@ function Dashboard() {
           {[...Array(4)].map((_, i) => <KpiSkeleton key={i} />)}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
           <Kpi title="Ingresos Totales"  value={fmt(ingresos)}  delta={pct(ingresos, ingresosLast)}           icon={DollarSign}   tint="bg-success/10 text-success" />
           <Kpi title="Gastos Totales"    value={fmt(gastos)}    delta={pct(gastos, gastosLast)} invert         icon={CreditCard}   tint="bg-info/10 text-info" />
           <Kpi title="Ganancia Neta"     value={fmt(ganancia)}  delta={pct(ganancia, ingresosLast - gastosLast)} icon={TrendingUp} tint="bg-primary/10 text-primary" />
           <Kpi title="Actividades"       value={String(total)}  delta={total - totalLast} isCount              icon={ClipboardList} tint="bg-warning/15 text-warning-foreground" />
         </div>
+
       )}
 
       {/* Charts */}
