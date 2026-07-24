@@ -314,46 +314,14 @@ function Seguimiento() {
             <KpiCard label="Actividades" value={String(totals.total)} tone="primary" icon={<Target className="h-4 w-4" />} />
           </div>
 
-          <Tabs defaultValue="recomendaciones">
-            <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 sm:grid-cols-4">
-              <TabsTrigger value="recomendaciones" className="rounded-lg data-[state=active]:shadow-sm"><Lightbulb className="mr-1.5 h-4 w-4" />Recomendaciones</TabsTrigger>
+          <Tabs defaultValue="evolucion">
+            <TabsList className="grid w-full grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1">
               <TabsTrigger value="evolucion" className="rounded-lg data-[state=active]:shadow-sm"><TrendingUp className="mr-1.5 h-4 w-4" />Evolución</TabsTrigger>
               <TabsTrigger value="metas" className="rounded-lg data-[state=active]:shadow-sm"><Target className="mr-1.5 h-4 w-4" />Metas</TabsTrigger>
               <TabsTrigger value="bitacora" className="rounded-lg data-[state=active]:shadow-sm"><StickyNote className="mr-1.5 h-4 w-4" />Bitácora</TabsTrigger>
             </TabsList>
 
-            {/* ---------- RECOMENDACIONES ---------- */}
-            <TabsContent value="recomendaciones" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Recomendaciones automáticas</CardTitle>
-                  <CardDescription>Basadas en tus indicadores actuales.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {reglas.map((r, i) => {
-                    const tone = r.prioridad === "alta" ? "destructive" : r.prioridad === "media" ? "warning" : "muted-foreground";
-                    return (
-                      <div
-                        key={i}
-                        className="group flex items-start gap-3 rounded-xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
-                        style={{ borderLeft: `4px solid var(--color-${tone})` }}
-                      >
-                        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-${tone}`} style={{ backgroundColor: `color-mix(in oklab, var(--color-${tone}) 15%, transparent)` }}>
-                          <AlertTriangle className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold">{r.titulo}</p>
-                            <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            </TabsContent>
+
 
 
             {/* ---------- EVOLUCIÓN ---------- */}
