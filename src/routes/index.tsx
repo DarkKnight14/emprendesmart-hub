@@ -137,9 +137,9 @@ function Landing() {
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Beneficios reales</h2>
             <p className="mt-4 text-muted-foreground">EmprendeSmart te permite trabajar con datos reales en lugar de intuición.</p>
           </div>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 stagger-children">
             {["Mayor control del negocio", "Mejores decisiones", "Ahorro de tiempo y dinero", "Crecimiento sostenible", "Historial centralizado", "Todo desde cualquier lugar"].map((b) => (
-              <li key={b} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+              <li key={b} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 card-interactive">
                 <CheckCircle2 className="h-5 w-5 text-success" /><span className="text-sm font-medium">{b}</span>
               </li>
             ))}
@@ -149,12 +149,17 @@ function Landing() {
 
       {/* CTA */}
       <section className="container mx-auto px-4 pb-20">
-        <div className="overflow-hidden rounded-3xl bg-sidebar p-10 text-center text-sidebar-foreground md:p-16">
-          <h2 className="text-3xl font-bold md:text-4xl">Empieza a tomar mejores decisiones hoy</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sidebar-foreground/80">Una plataforma simple, potente e inteligente, creada para impulsar el crecimiento de los emprendedores.</p>
-          <div className="mt-8"><Link to="/auth"><Button size="lg" className="gap-2">Crear cuenta gratis <ArrowRight className="h-4 w-4" /></Button></Link></div>
+        <div className="relative overflow-hidden rounded-3xl bg-sidebar p-10 text-center text-sidebar-foreground md:p-16">
+          <div className="pointer-events-none absolute inset-0 bg-hero opacity-40" aria-hidden />
+          <div className="pointer-events-none absolute -top-24 left-1/3 h-64 w-64 rounded-full bg-primary-glow/20 blur-3xl animate-float" aria-hidden />
+          <div className="relative">
+            <h2 className="text-3xl font-bold md:text-4xl">Empieza a tomar mejores decisiones hoy</h2>
+            <p className="mx-auto mt-4 max-w-xl text-sidebar-foreground/80">Una plataforma simple, potente e inteligente, creada para impulsar el crecimiento de los emprendedores.</p>
+            <div className="mt-8"><Link to="/auth"><Button size="lg" className="gap-2 hover-glow bg-primary-gradient animate-gradient">Crear cuenta gratis <ArrowRight className="h-4 w-4" /></Button></Link></div>
+          </div>
         </div>
       </section>
+
 
       <footer className="border-t border-border py-8">
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground md:flex-row">
