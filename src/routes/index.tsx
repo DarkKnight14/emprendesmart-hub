@@ -76,11 +76,12 @@ function Landing() {
       <section className="border-y border-border bg-secondary/40 py-12">
         <div className="container mx-auto px-4">
           <p className="mb-6 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">¿Para quién es?</p>
-          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-6 text-center md:grid-cols-4">
+          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-6 text-center md:grid-cols-4 stagger-children">
             {["Emprendedores individuales", "Pequeños negocios", "Freelancers", "Nuevos emprendimientos"].map((t) => (
-              <div key={t} className="rounded-xl border border-border bg-card p-4 text-sm font-medium">{t}</div>
+              <div key={t} className="rounded-xl border border-border bg-card p-4 text-sm font-medium hover-lift">{t}</div>
             ))}
           </div>
+
         </div>
       </section>
 
