@@ -142,10 +142,11 @@ function AuthLayout() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:opacity-90">
+                  <button className="grid h-9 w-9 place-items-center rounded-full bg-primary-gradient text-sm font-semibold text-primary-foreground shadow-md transition-transform duration-200 hover:scale-110">
                     {nombre.charAt(0).toUpperCase() || "U"}
                   </button>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
