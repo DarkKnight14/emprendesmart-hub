@@ -154,33 +154,8 @@ function Seguimiento() {
     return { ingresos, gastos, margen: ingresos - gastos, total: acts.length };
   }, [acts]);
 
-  // ---------- Recomendaciones por reglas ----------
-  const reglas = useMemo(() => {
-    const out: { titulo: string; detalle: string; prioridad: "alta" | "media" | "baja" }[] = [];
-    if (totals.total === 0) {
-      out.push({ titulo: "Empieza a registrar actividades", detalle: "Aún no hay datos. Registra ventas y gastos para obtener análisis.", prioridad: "alta" });
-      return out;
-    }
-    if (totals.margen < 0) {
-      out.push({ titulo: "Tu margen es negativo", detalle: `Estás gastando ${(totals.gastos - totals.ingresos).toFixed(2)} más de lo que ingresas. Revisa gastos fijos.`, prioridad: "alta" });
-    }
-    if (totals.gastos > 0 && totals.gastos > totals.ingresos * 0.7) {
-      out.push({ titulo: "Gastos altos vs ingresos", detalle: "Tus gastos superan el 70% de los ingresos. Identifica gastos prescindibles.", prioridad: "media" });
-    }
-    const ultMes = monthly[monthly.length - 1];
-    const prev = monthly[monthly.length - 2];
-    if (ultMes && prev && prev.ingresos > 0 && ultMes.ingresos < prev.ingresos * 0.8) {
-      out.push({ titulo: "Caída de ingresos este mes", detalle: "Tus ingresos bajaron más de 20% respecto al mes anterior. Considera promociones o revisar canales de venta.", prioridad: "alta" });
-    }
-    const clientes = acts.filter((a) => a.tipo_actividad === "cliente").length;
-    if (clientes < 3 && totals.total > 5) {
-      out.push({ titulo: "Registra más interacciones con clientes", detalle: "Un buen seguimiento de clientes mejora ventas recurrentes.", prioridad: "media" });
-    }
-    if (out.length === 0) {
-      out.push({ titulo: "Vas por buen camino", detalle: "Tus indicadores están saludables. Mantén el registro constante.", prioridad: "baja" });
-    }
-    return out;
-  }, [totals, monthly, acts]);
+
+
 
   // ---------- Mutations ----------
   const crearMeta = useMutation({
