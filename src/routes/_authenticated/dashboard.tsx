@@ -210,15 +210,16 @@ function Dashboard() {
       {/* Alertas */}
       <Card>
         <CardHeader><CardTitle>Alertas y Recomendaciones</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
+        <CardContent className="grid gap-3 md:grid-cols-3 stagger-children">
           {alerts.map((a, i) => (
-            <div key={i} className={`flex items-start gap-3 rounded-xl border border-border p-4 ${a.tone === "warning" ? "bg-warning/10" : "bg-info/10"}`}>
+            <div key={i} className={`flex items-start gap-3 rounded-xl border border-border p-4 card-interactive ${a.tone === "warning" ? "bg-warning/10" : "bg-info/10"}`}>
               <a.icon className={`h-5 w-5 shrink-0 ${a.tone === "warning" ? "text-warning-foreground" : "text-info"}`} />
               <p className="text-sm">{a.text}</p>
             </div>
           ))}
         </CardContent>
       </Card>
+
     </div>
   );
 }
