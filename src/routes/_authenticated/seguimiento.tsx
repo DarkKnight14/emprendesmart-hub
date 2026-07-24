@@ -26,8 +26,9 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from "recharts";
 import {
-  Sparkles, Plus, Trash2, Target, StickyNote, TrendingUp, Lightbulb, AlertTriangle,
+  Sparkles, Plus, Trash2, Target, StickyNote, TrendingUp, AlertTriangle,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/seguimiento")({
   head: () => ({ meta: [{ title: "Seguimiento — EmprendeSmart" }] }),
@@ -54,11 +55,8 @@ type Meta = {
 };
 type Nota = { id: string; contenido: string; created_at: string };
 
-type Reco = {
-  resumen: string;
-  recomendaciones: { titulo: string; detalle: string; prioridad: "alta" | "media" | "baja" }[];
-  metricas: { ingresos: number; gastos: number; margen: number; total: number };
-};
+
+
 
 const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
   ingreso: "bg-success",
@@ -156,33 +154,8 @@ function Seguimiento() {
     return { ingresos, gastos, margen: ingresos - gastos, total: acts.length };
   }, [acts]);
 
-  // ---------- Recomendaciones por reglas ----------
-  const reglas = useMemo(() => {
-    const out: { titulo: string; detalle: string; prioridad: "alta" | "media" | "baja" }[] = [];
-    if (totals.total === 0) {
-      out.push({ titulo: "Empieza a registrar actividades", detalle: "Aún no hay datos. Registra ventas y gastos para obtener análisis.", prioridad: "alta" });
-      return out;
-    }
-    if (totals.margen < 0) {
-      out.push({ titulo: "Tu margen es negativo", detalle: `Estás gastando ${(totals.gastos - totals.ingresos).toFixed(2)} más de lo que ingresas. Revisa gastos fijos.`, prioridad: "alta" });
-    }
-    if (totals.gastos > 0 && totals.gastos > totals.ingresos * 0.7) {
-      out.push({ titulo: "Gastos altos vs ingresos", detalle: "Tus gastos superan el 70% de los ingresos. Identifica gastos prescindibles.", prioridad: "media" });
-    }
-    const ultMes = monthly[monthly.length - 1];
-    const prev = monthly[monthly.length - 2];
-    if (ultMes && prev && prev.ingresos > 0 && ultMes.ingresos < prev.ingresos * 0.8) {
-      out.push({ titulo: "Caída de ingresos este mes", detalle: "Tus ingresos bajaron más de 20% respecto al mes anterior. Considera promociones o revisar canales de venta.", prioridad: "alta" });
-    }
-    const clientes = acts.filter((a) => a.tipo_actividad === "cliente").length;
-    if (clientes < 3 && totals.total > 5) {
-      out.push({ titulo: "Registra más interacciones con clientes", detalle: "Un buen seguimiento de clientes mejora ventas recurrentes.", prioridad: "media" });
-    }
-    if (out.length === 0) {
-      out.push({ titulo: "Vas por buen camino", detalle: "Tus indicadores están saludables. Mantén el registro constante.", prioridad: "baja" });
-    }
-    return out;
-  }, [totals, monthly, acts]);
+
+
 
   // ---------- Mutations ----------
   const crearMeta = useMutation({
@@ -253,8 +226,8 @@ function Seguimiento() {
   });
 
 
-  const prioColor = (p: "alta" | "media" | "baja") =>
-    p === "alta" ? "destructive" : p === "media" ? "default" : "secondary";
+
+
 
   const empActual = emps.find((e) => e.id === empId);
 
@@ -314,46 +287,14 @@ function Seguimiento() {
             <KpiCard label="Actividades" value={String(totals.total)} tone="primary" icon={<Target className="h-4 w-4" />} />
           </div>
 
-          <Tabs defaultValue="recomendaciones">
-            <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 sm:grid-cols-4">
-              <TabsTrigger value="recomendaciones" className="rounded-lg data-[state=active]:shadow-sm"><Lightbulb className="mr-1.5 h-4 w-4" />Recomendaciones</TabsTrigger>
+          <Tabs defaultValue="evolucion">
+            <TabsList className="grid w-full grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1">
               <TabsTrigger value="evolucion" className="rounded-lg data-[state=active]:shadow-sm"><TrendingUp className="mr-1.5 h-4 w-4" />Evolución</TabsTrigger>
               <TabsTrigger value="metas" className="rounded-lg data-[state=active]:shadow-sm"><Target className="mr-1.5 h-4 w-4" />Metas</TabsTrigger>
               <TabsTrigger value="bitacora" className="rounded-lg data-[state=active]:shadow-sm"><StickyNote className="mr-1.5 h-4 w-4" />Bitácora</TabsTrigger>
             </TabsList>
 
-            {/* ---------- RECOMENDACIONES ---------- */}
-            <TabsContent value="recomendaciones" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Recomendaciones automáticas</CardTitle>
-                  <CardDescription>Basadas en tus indicadores actuales.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {reglas.map((r, i) => {
-                    const tone = r.prioridad === "alta" ? "destructive" : r.prioridad === "media" ? "warning" : "muted-foreground";
-                    return (
-                      <div
-                        key={i}
-                        className="group flex items-start gap-3 rounded-xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
-                        style={{ borderLeft: `4px solid var(--color-${tone})` }}
-                      >
-                        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-${tone}`} style={{ backgroundColor: `color-mix(in oklab, var(--color-${tone}) 15%, transparent)` }}>
-                          <AlertTriangle className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold">{r.titulo}</p>
-                            <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            </TabsContent>
+
 
 
             {/* ---------- EVOLUCIÓN ---------- */}
