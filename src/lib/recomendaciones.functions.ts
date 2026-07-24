@@ -17,15 +17,15 @@ const schema = z.object({
 export const generarRecomendacionesIA = createServerFn({ method: "POST" })
   .validator(schema)
   .handler(async ({ data }) => {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("Falta ANTHROPIC_API_KEY en las variables de entorno del servidor");
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("Falta LOVABLE_API_KEY. Contacta al administrador.");
 
     const { acts } = data;
 
     const ingresos = acts.filter((a) => a.tipo_actividad === "ingreso").reduce((s, a) => s + Number(a.monto), 0);
-    const gastos   = acts.filter((a) => a.tipo_actividad === "gasto").reduce((s, a) => s + Number(a.monto), 0);
-    const margen   = ingresos - gastos;
-    const total    = acts.length;
+    const gastos = acts.filter((a) => a.tipo_actividad === "gasto").reduce((s, a) => s + Number(a.monto), 0);
+    const margen = ingresos - gastos;
+    const total = acts.length;
 
     const prompt = `Eres un asesor financiero experto para emprendedores latinoamericanos.
 
@@ -63,27 +63,28 @@ Responde ÚNICAMENTE con este JSON exacto (sin markdown, sin texto adicional):
 
 Genera entre 3 y 5 recomendaciones. Prioridad puede ser: "alta", "media" o "baja".`;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "Lovable-API-Key": apiKey,
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1024,
+        model: "google/gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
       }),
     });
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(`Error API Claude: ${res.status} — ${err}`);
+      if (res.status === 429) throw new Error("Límite de solicitudes alcanzado. Intenta en unos minutos.");
+      if (res.status === 402) throw new Error("Créditos de IA agotados. Recarga tu workspace.");
+      throw new Error(`Error IA: ${res.status} — ${err}`);
     }
 
     const completion = await res.json();
-    const text: string = completion.content?.[0]?.text ?? "";
+    const text: string = completion.choices?.[0]?.message?.content ?? "";
 
     let parsed: {
       resumen: string;
