@@ -90,14 +90,14 @@ function Landing() {
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Todo lo que necesitas en un solo lugar</h2>
           <p className="mt-4 text-muted-foreground">Diseñado para ser simple, sin requerir conocimientos técnicos o contables avanzados.</p>
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-3 stagger-children">
           {[
             { icon: ClipboardCheck, title: "Registra actividades diarias", desc: "Ingresos, gastos, tareas y clientes — todo en segundos.", color: "bg-info/10 text-info" },
             { icon: BarChart3, title: "Indicadores automáticos", desc: "Visualiza la salud de tu negocio con gráficos claros y actualizados.", color: "bg-success/10 text-success" },
             { icon: Bell, title: "Alertas inteligentes", desc: "Recibe avisos cuando algo necesite tu atención antes de que sea tarde.", color: "bg-warning/10 text-warning-foreground" },
           ].map((f) => (
-            <div key={f.title} className="rounded-2xl border border-border bg-card p-6 transition hover:shadow-md">
-              <div className={`mb-4 grid h-12 w-12 place-items-center rounded-xl ${f.color}`}>
+            <div key={f.title} className="group rounded-2xl border border-border bg-card p-6 card-interactive">
+              <div className={`mb-4 grid h-12 w-12 place-items-center rounded-xl ${f.color} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                 <f.icon className="h-6 w-6" />
               </div>
               <h3 className="text-lg font-semibold">{f.title}</h3>
@@ -105,6 +105,7 @@ function Landing() {
             </div>
           ))}
         </div>
+
       </section>
 
       {/* How */}
