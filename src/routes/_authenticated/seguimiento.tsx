@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { generarRecomendacionesIA } from "@/lib/recomendaciones.functions";
 import { useMemo, useState } from "react";
 import { format, parseISO, subMonths, startOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
@@ -70,12 +69,10 @@ const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
 
 function Seguimiento() {
   const qc = useQueryClient();
-  const generar = useServerFn(generarRecomendacionesIA);
   const [empId, setEmpId] = useState<string>("");
   const [metaOpen, setMetaOpen] = useState(false);
   const [notaText, setNotaText] = useState("");
-  const [reco, setReco] = useState<Reco | null>(null);
-  const [loadingReco, setLoadingReco] = useState(false);
+
 
   const [metaForm, setMetaForm] = useState({
     titulo: "",
@@ -255,19 +252,6 @@ function Seguimiento() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notas", empId] }),
   });
 
-  async function pedirIA() {
-    if (!empId) return;
-    setLoadingReco(true);
-    try {
-      const r = await generar({ data: { emprendimientoId: empId, acts } });
-      setReco(r as Reco);
-      toast.success("Análisis IA generado");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setLoadingReco(false);
-    }
-  }
 
   const prioColor = (p: "alta" | "media" | "baja") =>
     p === "alta" ? "destructive" : p === "media" ? "default" : "secondary";
@@ -341,15 +325,9 @@ function Seguimiento() {
             {/* ---------- RECOMENDACIONES ---------- */}
             <TabsContent value="recomendaciones" className="space-y-4">
               <Card>
-                <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
-                  <div>
-                    <CardTitle className="text-base">Recomendaciones automáticas</CardTitle>
-                    <CardDescription>Basadas en tus indicadores actuales.</CardDescription>
-                  </div>
-                  <Button onClick={pedirIA} disabled={loadingReco} className="gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    {loadingReco ? "Analizando..." : "Análisis IA"}
-                  </Button>
+                <CardHeader>
+                  <CardTitle className="text-base">Recomendaciones automáticas</CardTitle>
+                  <CardDescription>Basadas en tus indicadores actuales.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {reglas.map((r, i) => {
@@ -375,36 +353,8 @@ function Seguimiento() {
                   })}
                 </CardContent>
               </Card>
-
-              {reco && (
-                <Card
-                  className="overflow-hidden border-primary/30"
-                  style={{ boxShadow: "var(--shadow-elegant)" }}
-                >
-                  <div className="h-1 w-full" style={{ backgroundImage: "var(--gradient-primary)" }} />
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <span className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground" style={{ backgroundImage: "var(--gradient-primary)" }}>
-                        <Sparkles className="h-4 w-4" />
-                      </span>
-                      Análisis con IA
-                    </CardTitle>
-                    <CardDescription className="pt-1">{reco.resumen}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {reco.recomendaciones.map((r, i) => (
-                      <div key={i} className="rounded-xl border bg-muted/40 p-3 transition-colors hover:bg-muted/70">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold">{r.titulo}</p>
-                          <Badge variant={prioColor(r.prioridad)} className="text-[10px] capitalize">{r.prioridad}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm text-muted-foreground">{r.detalle}</p>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
             </TabsContent>
+
 
             {/* ---------- EVOLUCIÓN ---------- */}
             <TabsContent value="evolucion" className="space-y-4">
