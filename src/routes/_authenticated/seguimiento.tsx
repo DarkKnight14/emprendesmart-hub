@@ -26,8 +26,9 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from "recharts";
 import {
-  Sparkles, Plus, Trash2, Target, StickyNote, TrendingUp, Lightbulb, AlertTriangle,
+  Sparkles, Plus, Trash2, Target, StickyNote, TrendingUp, AlertTriangle,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/seguimiento")({
   head: () => ({ meta: [{ title: "Seguimiento — EmprendeSmart" }] }),
