@@ -173,9 +173,10 @@ function AuthLayout() {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-8">
+          <main key={typeof window !== "undefined" ? window.location.pathname : "m"} className="flex-1 p-4 md:p-8 animate-fade-in-up">
             <Outlet />
           </main>
+
         </div>
       </div>
     </SidebarProvider>
