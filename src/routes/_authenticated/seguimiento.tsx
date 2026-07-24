@@ -69,12 +69,10 @@ const TIPO_COLOR: Record<Act["tipo_actividad"], string> = {
 
 function Seguimiento() {
   const qc = useQueryClient();
-  const generar = useServerFn(generarRecomendacionesIA);
   const [empId, setEmpId] = useState<string>("");
   const [metaOpen, setMetaOpen] = useState(false);
   const [notaText, setNotaText] = useState("");
-  const [reco, setReco] = useState<Reco | null>(null);
-  const [loadingReco, setLoadingReco] = useState(false);
+
 
   const [metaForm, setMetaForm] = useState({
     titulo: "",
