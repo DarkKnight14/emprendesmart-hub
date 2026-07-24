@@ -38,33 +38,39 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="container mx-auto grid items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-            <span className="h-2 w-2 rounded-full bg-success" /> Para emprendedores locales
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-hero opacity-[0.08]" aria-hidden />
+        <div className="pointer-events-none absolute -top-24 -left-24 -z-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-float" aria-hidden />
+        <div className="pointer-events-none absolute top-40 -right-20 -z-10 h-80 w-80 rounded-full bg-accent/25 blur-3xl animate-float" style={{ animationDelay: "1.5s" }} aria-hidden />
+        <div className="container mx-auto grid items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
+          <div className="stagger-children">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+              <span className="h-2 w-2 rounded-full bg-success animate-pulse-glow" /> Para emprendedores locales
+            </div>
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
+              Gestiona tu emprendimiento <span className="text-gradient animate-gradient">con inteligencia</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+              Plataforma web que ayuda a los emprendedores a gestionar sus operaciones,
+              visualizar indicadores clave y recibir recomendaciones para hacer crecer su negocio.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/auth"><Button size="lg" className="gap-2 hover-glow bg-primary-gradient animate-gradient">Empezar ahora <ArrowRight className="h-4 w-4" /></Button></Link>
+              <a href="#how"><Button size="lg" variant="outline" className="hover-lift">Ver cómo funciona</Button></a>
+            </div>
+            <ul className="mt-8 grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              {["Registro de actividades", "Indicadores automáticos", "Alertas inteligentes", "Historial completo"].map((t) => (
+                <li key={t} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />{t}</li>
+              ))}
+            </ul>
           </div>
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-            Gestiona tu emprendimiento <span className="text-primary">con inteligencia</span>
-          </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Plataforma web que ayuda a los emprendedores a gestionar sus operaciones,
-            visualizar indicadores clave y recibir recomendaciones para hacer crecer su negocio.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/auth"><Button size="lg" className="gap-2">Empezar ahora <ArrowRight className="h-4 w-4" /></Button></Link>
-            <a href="#how"><Button size="lg" variant="outline">Ver cómo funciona</Button></a>
+          <div className="relative animate-scale-in">
+            <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-tr from-primary/25 via-accent/20 to-primary-glow/20 blur-2xl animate-gradient" />
+            <img src={heroImg} alt="EmprendeSmart" width={1280} height={960} className="rounded-2xl border border-border shadow-xl hover-lift" />
           </div>
-          <ul className="mt-8 grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            {["Registro de actividades", "Indicadores automáticos", "Alertas inteligentes", "Historial completo"].map((t) => (
-              <li key={t} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />{t}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-tr from-primary/15 via-success/10 to-warning/10 blur-2xl" />
-          <img src={heroImg} alt="EmprendeSmart" width={1280} height={960} className="rounded-2xl border border-border shadow-xl" />
         </div>
       </section>
+
 
       {/* Para quién */}
       <section className="border-y border-border bg-secondary/40 py-12">
