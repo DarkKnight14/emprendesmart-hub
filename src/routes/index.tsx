@@ -112,7 +112,7 @@ function Landing() {
       <section id="how" className="border-t border-border bg-secondary/40 py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">¿Cómo funciona?</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-5">
+          <div className="mt-12 grid gap-6 md:grid-cols-5 stagger-children">
             {[
               "Registra tus actividades",
               "Se guarda en la plataforma",
@@ -120,12 +120,13 @@ function Landing() {
               "Se muestran indicadores",
               "Tomas mejores decisiones",
             ].map((step, i) => (
-              <div key={step} className="relative rounded-xl border border-border bg-card p-5 text-center">
-                <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground font-bold">{i + 1}</div>
+              <div key={step} className="relative rounded-xl border border-border bg-card p-5 text-center hover-lift">
+                <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-primary-gradient text-primary-foreground font-bold shadow-md animate-pulse-glow" style={{ animationDelay: `${i * 0.2}s` }}>{i + 1}</div>
                 <p className="text-sm font-medium">{step}</p>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
