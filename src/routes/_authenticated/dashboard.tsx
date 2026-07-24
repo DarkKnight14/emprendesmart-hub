@@ -158,12 +158,13 @@ function Dashboard() {
           {[...Array(4)].map((_, i) => <KpiSkeleton key={i} />)}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
           <Kpi title="Ingresos Totales"  value={fmt(ingresos)}  delta={pct(ingresos, ingresosLast)}           icon={DollarSign}   tint="bg-success/10 text-success" />
           <Kpi title="Gastos Totales"    value={fmt(gastos)}    delta={pct(gastos, gastosLast)} invert         icon={CreditCard}   tint="bg-info/10 text-info" />
           <Kpi title="Ganancia Neta"     value={fmt(ganancia)}  delta={pct(ganancia, ingresosLast - gastosLast)} icon={TrendingUp} tint="bg-primary/10 text-primary" />
           <Kpi title="Actividades"       value={String(total)}  delta={total - totalLast} isCount              icon={ClipboardList} tint="bg-warning/15 text-warning-foreground" />
         </div>
+
       )}
 
       {/* Charts */}
@@ -209,15 +210,16 @@ function Dashboard() {
       {/* Alertas */}
       <Card>
         <CardHeader><CardTitle>Alertas y Recomendaciones</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
+        <CardContent className="grid gap-3 md:grid-cols-3 stagger-children">
           {alerts.map((a, i) => (
-            <div key={i} className={`flex items-start gap-3 rounded-xl border border-border p-4 ${a.tone === "warning" ? "bg-warning/10" : "bg-info/10"}`}>
+            <div key={i} className={`flex items-start gap-3 rounded-xl border border-border p-4 card-interactive ${a.tone === "warning" ? "bg-warning/10" : "bg-info/10"}`}>
               <a.icon className={`h-5 w-5 shrink-0 ${a.tone === "warning" ? "text-warning-foreground" : "text-info"}`} />
               <p className="text-sm">{a.text}</p>
             </div>
           ))}
         </CardContent>
       </Card>
+
     </div>
   );
 }
@@ -229,7 +231,7 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
   const positive = invert ? delta < 0 : delta > 0;
   const arrow = delta === 0 ? "—" : delta > 0 ? "+" : "";
   return (
-    <Card>
+    <Card className="card-interactive overflow-hidden">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
@@ -239,7 +241,7 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
               {arrow}{delta}{isCount ? "" : "%"} vs mes anterior
             </p>
           </div>
-          <div className={`grid h-11 w-11 place-items-center rounded-xl ${tint}`}>
+          <div className={`grid h-11 w-11 place-items-center rounded-xl ${tint} transition-transform duration-300 hover:scale-110 hover:rotate-3`}>
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -247,3 +249,4 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
     </Card>
   );
 }
+
