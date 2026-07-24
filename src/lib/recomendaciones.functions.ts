@@ -67,7 +67,7 @@ Genera entre 3 y 5 recomendaciones. Prioridad puede ser: "alta", "media" o "baja
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
