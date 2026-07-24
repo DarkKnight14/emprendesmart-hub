@@ -230,7 +230,7 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
   const positive = invert ? delta < 0 : delta > 0;
   const arrow = delta === 0 ? "—" : delta > 0 ? "+" : "";
   return (
-    <Card>
+    <Card className="card-interactive overflow-hidden">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
@@ -240,7 +240,7 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
               {arrow}{delta}{isCount ? "" : "%"} vs mes anterior
             </p>
           </div>
-          <div className={`grid h-11 w-11 place-items-center rounded-xl ${tint}`}>
+          <div className={`grid h-11 w-11 place-items-center rounded-xl ${tint} transition-transform duration-300 hover:scale-110 hover:rotate-3`}>
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -248,3 +248,4 @@ function Kpi({ title, value, delta, icon: Icon, tint, invert, isCount }: {
     </Card>
   );
 }
+
