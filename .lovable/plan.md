@@ -29,6 +29,7 @@ Se actualizan la tabla de contenido y la numeración de las secciones siguientes
 ## Detalle técnico
 
 - Se edita `/tmp/docgen/build.js` (generador con la librería `docx`): nueva función que construye la sección RUP con los helpers `h1`/`h2`/`p`/tablas ya existentes, respetando Arial 12 negro.
+- Las tablas de cronograma y el Gantt usan anchos en DXA que suman el ancho de contenido, con sombreado `ShadingType.CLEAR`; el Gantt se orienta en una sección apaisada si no cabe en vertical.
 - Se renumeran las secciones posteriores y sus entradas en "Contenido" (tab stop derecho con líder de puntos).
 - Salida: `EmprendeSmart_Documento_Tecnico_v10.docx` en la carpeta de documentos, verificada renderizando las páginas a imagen.
 - No se modifica código de la aplicación web.
