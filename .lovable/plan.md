@@ -12,13 +12,19 @@ Una nueva sección principal "Metodología de desarrollo: RUP", ubicada antes de
    - Elaboración: modelo entidad-relación, arquitectura React + TanStack Start + PostgreSQL/Supabase, prototipo de landing y dashboard.
    - Construcción: iteraciones de autenticación, emprendimientos, actividades, indicadores, alertas y seguimiento.
    - Transición: despliegue, repositorio en GitHub, video demostrativo, pruebas y ajustes finales.
-3. **Tabla de iteraciones**: fase, iteración, objetivo, entregable, evidencia (captura ya incluida en el documento).
-4. **Disciplinas RUP** (modelado de negocio, requisitos, análisis y diseño, implementación, pruebas, despliegue, gestión de configuración) con lo hecho en cada una.
-5. **Modelo de casos de uso**: actores (Emprendedor, Administrador) y casos de uso principales, en lista y tabla; descripción extendida de 2 casos clave (Registrar actividad, Consultar indicadores/alertas).
-6. **Artefactos RUP producidos**, mapeados a los archivos y capturas reales del proyecto.
-7. **Diagrama textual del ciclo RUP** (fases vs. disciplinas) en formato de tabla, sin imágenes nuevas.
+3. **Paso a paso del desarrollo**: narrativa ordenada de cómo se construyó el proyecto, iteración por iteración, indicando qué se hizo, qué artefacto se produjo y qué evidencia (captura) lo respalda.
+4. **Cronogramas**:
+   - Cronograma general por fases: fase, semanas, hitos, entregable.
+   - Cronograma detallado por iteraciones: iteración, actividades, duración, responsable, estado.
+   - Diagrama de Gantt en formato de tabla (semanas 1..N como columnas, celdas sombreadas para marcar duración de cada actividad), en Arial 12 negro.
+   - Distribución del esfuerzo por disciplina a lo largo de las 4 fases (tabla de porcentajes, equivalente a la "joroba" clásica de RUP).
+5. **Disciplinas RUP** (modelado de negocio, requisitos, análisis y diseño, implementación, pruebas, despliegue, gestión de configuración) con lo hecho en cada una.
+6. **Modelo de casos de uso**: actores (Emprendedor, Administrador) y casos de uso principales, en lista y tabla; descripción extendida de 2 casos clave (Registrar actividad, Consultar indicadores/alertas).
+7. **Artefactos RUP producidos**, mapeados a los archivos y capturas reales del proyecto.
+8. **Gestión de riesgos** por fase: riesgo, impacto, mitigación aplicada.
 
 Se actualizan la tabla de contenido y la numeración de las secciones siguientes. Se añaden 2 referencias APA sobre RUP (Kruchten; Jacobson, Booch y Rumbaugh) a la sección de referencias.
+
 
 ## Detalle técnico
 
