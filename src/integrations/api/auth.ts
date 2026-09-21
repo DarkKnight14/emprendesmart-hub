@@ -25,6 +25,16 @@ function mapUser(u: {
   };
 }
 
+function traducirError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("already registered") || m.includes("already exists"))
+    return "Este correo ya tiene una cuenta. Usa \"Iniciar sesión\" o prueba con otro correo.";
+  if (m.includes("invalid login credentials")) return "Correo o contraseña incorrectos.";
+  if (m.includes("password")) return "La contraseña debe tener al menos 6 caracteres.";
+  if (m.includes("email")) return "El correo no es válido.";
+  return msg;
+}
+
 export const authApi = {
   async register(nombre: string, correo: string, password: string) {
     const { data, error } = await supabase.auth.signUp({
@@ -35,7 +45,7 @@ export const authApi = {
         emailRedirectTo: `${window.location.origin}/dashboard`,
       },
     });
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(traducirError(error.message));
     if (!data.user) throw new Error("No se pudo crear la cuenta.");
     return { user: mapUser(data.user), token: data.session?.access_token ?? "" };
   },
@@ -45,7 +55,7 @@ export const authApi = {
       email: correo,
       password,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(traducirError(error.message));
     if (!data.user) throw new Error("Credenciales inválidas.");
     return { user: mapUser(data.user), token: data.session?.access_token ?? "" };
   },
