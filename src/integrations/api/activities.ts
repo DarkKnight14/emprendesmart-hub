@@ -1,10 +1,8 @@
 // src/integrations/api/activities.ts
-// Mapeo: frontend usa "descripcion/tipo_actividad/monto/fecha/emprendimiento_id/impacto/duracion"
-//        backend usa  "title/type/amount/activityDate/businessId"
+// Actividades directamente desde Lovable Cloud (Supabase)
 
-import { api } from './client';
+import { supabase } from "@/integrations/supabase/client";
 
-// Tipo que el frontend usa
 export interface Actividad {
   id: string;
   fecha: string;
@@ -16,67 +14,88 @@ export interface Actividad {
   emprendimiento_id: string;
 }
 
-// Tipo que devuelve el backend
-interface BackendActivity {
+type Row = {
   id: string;
-  title: string;
-  description?: string;
-  type: string;
-  amount: number;
-  activityDate: string;
-  impacto?: string;
-  duracion?: number | null;
-  businessId: string;
-  createdAt: string;
-}
+  fecha: string;
+  tipo_actividad: string;
+  descripcion: string;
+  monto: number | string;
+  impacto: string | null;
+  duracion: number | null;
+  emprendimiento_id: string;
+};
 
-// Backend → Frontend
-function toAct(b: BackendActivity): Actividad {
+const COLS = "id, fecha, tipo_actividad, descripcion, monto, impacto, duracion, emprendimiento_id";
+
+function toAct(b: Row): Actividad {
   return {
-    id:               b.id,
-    fecha:            new Date(b.activityDate).toISOString().slice(0, 10),
-    tipo_actividad:   b.type,
-    descripcion:      b.title,
-    monto:            b.amount,
-    impacto:          b.impacto || 'medio',
-    duracion:         b.duracion ?? null,
-    emprendimiento_id: b.businessId,
+    id: b.id,
+    fecha: String(b.fecha).slice(0, 10),
+    tipo_actividad: b.tipo_actividad,
+    descripcion: b.descripcion,
+    monto: Number(b.monto) || 0,
+    impacto: b.impacto || "medio",
+    duracion: b.duracion ?? null,
+    emprendimiento_id: b.emprendimiento_id,
   };
 }
 
-// Frontend → Backend
-function toBackend(a: Partial<Actividad> & { businessId?: string }) {
-  return {
-    title:        a.descripcion,
-    type:         a.tipo_actividad,
-    amount:       a.monto,
-    activityDate: a.fecha ? new Date(a.fecha).toISOString() : undefined,
-    impacto:      a.impacto,
-    duracion:     a.duracion,
-    businessId:   a.emprendimiento_id || a.businessId,
-  };
+async function requireUserId(): Promise<string> {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) throw new Error("Sesión expirada. Inicia sesión de nuevo.");
+  return data.user.id;
 }
 
 export const activitiesApi = {
   async list(businessId?: string): Promise<Actividad[]> {
-    const path = businessId
-      ? `/activities?businessId=${businessId}`
-      : '/activities';
-    const data = await api.get<BackendActivity[]>(path);
-    return data.map(toAct);
+    let q = supabase.from("actividades").select(COLS).order("fecha", { ascending: false });
+    if (businessId) q = q.eq("emprendimiento_id", businessId);
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => toAct(r as Row));
   },
 
-  async create(input: Omit<Actividad, 'id'>): Promise<Actividad> {
-    const data = await api.post<BackendActivity>('/activities', toBackend(input));
-    return toAct(data);
+  async create(input: Omit<Actividad, "id">): Promise<Actividad> {
+    const user_id = await requireUserId();
+    const { data, error } = await supabase
+      .from("actividades")
+      .insert({
+        user_id,
+        emprendimiento_id: input.emprendimiento_id,
+        fecha: input.fecha,
+        tipo_actividad: input.tipo_actividad as never,
+        descripcion: input.descripcion,
+        monto: input.monto ?? 0,
+        impacto: (input.impacto || "medio") as never,
+        duracion: input.duracion,
+      })
+      .select(COLS)
+      .single();
+    if (error) throw new Error(error.message);
+    return toAct(data as Row);
   },
 
   async update(id: string, input: Partial<Actividad>): Promise<Actividad> {
-    const data = await api.put<BackendActivity>(`/activities/${id}`, toBackend(input));
-    return toAct(data);
+    const { data, error } = await supabase
+      .from("actividades")
+      .update({
+        emprendimiento_id: input.emprendimiento_id,
+        fecha: input.fecha,
+        tipo_actividad: input.tipo_actividad as never,
+        descripcion: input.descripcion,
+        monto: input.monto,
+        impacto: input.impacto as never,
+        duracion: input.duracion,
+      })
+      .eq("id", id)
+      .select(COLS)
+      .single();
+    if (error) throw new Error(error.message);
+    return toAct(data as Row);
   },
 
   async remove(id: string): Promise<void> {
-    await api.delete(`/activities/${id}`);
+    const { error } = await supabase.from("actividades").delete().eq("id", id);
+    if (error) throw new Error(error.message);
   },
 };
