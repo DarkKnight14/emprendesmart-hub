@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -55,16 +55,13 @@ function AuthLayout() {
   const { data: alertas = [] } = useQuery({
     queryKey: ["alertas-header"],
     queryFn: async () => {
-      try {
-        // Obtener primer negocio del usuario
-        const businesses = await api.get<{ id: string }[]>('/business');
-        if (!businesses.length) return [];
-        const bId = businesses[0].id;
-        const data = await api.get<Record<string, unknown>[]>(`/business/${bId}/alertas`).catch(() => []);
-        return data.map(mapAlerta).slice(0, 10);
-      } catch {
-        return [];
-      }
+      const { data, error } = await supabase
+        .from("alertas")
+        .select("id, mensaje, nivel, fecha, leida")
+        .order("fecha", { ascending: false })
+        .limit(10);
+      if (error) return [];
+      return (data ?? []).map((a) => mapAlerta(a as Record<string, unknown>));
     },
     refetchInterval: 30_000,
   });
