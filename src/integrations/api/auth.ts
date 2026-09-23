@@ -1,6 +1,7 @@
 // src/integrations/api/auth.ts
-// Autenticación vía Lovable Cloud (Supabase)
+// Autenticación: nube (Lovable Cloud) o servidor local según VITE_DATA_MODE
 import { supabase } from "@/integrations/supabase/client";
+import { IS_LOCAL, localFetch, localToken } from "./local";
 
 export interface AuthUser {
   id: string;
@@ -35,8 +36,15 @@ function traducirError(msg: string): string {
   return msg;
 }
 
+type LocalAuth = { token: string; user: AuthUser };
+
 export const authApi = {
   async register(nombre: string, correo: string, password: string) {
+    if (IS_LOCAL) {
+      const r = await localFetch<LocalAuth>("/auth/register", "POST", { nombre, correo, password });
+      localToken.set(r.token);
+      return r;
+    }
     const { data, error } = await supabase.auth.signUp({
       email: correo,
       password,
@@ -51,6 +59,11 @@ export const authApi = {
   },
 
   async login(correo: string, password: string) {
+    if (IS_LOCAL) {
+      const r = await localFetch<LocalAuth>("/auth/login", "POST", { correo, password });
+      localToken.set(r.token);
+      return r;
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email: correo,
       password,
@@ -61,16 +74,29 @@ export const authApi = {
   },
 
   async getUser(): Promise<AuthUser | null> {
+    if (IS_LOCAL) {
+      if (!localToken.get()) return null;
+      try {
+        return await localFetch<AuthUser>("/auth/me");
+      } catch {
+        localToken.clear();
+        return null;
+      }
+    }
     const { data } = await supabase.auth.getUser();
     return data.user ? mapUser(data.user) : null;
   },
 
   async logout() {
+    if (IS_LOCAL) {
+      localToken.clear();
+      return;
+    }
     await supabase.auth.signOut();
   },
 
   isAuthenticated(): boolean {
-    // Chequeo síncrono contra el token persistido por supabase-js
+    if (IS_LOCAL) return !!localToken.get();
     try {
       const keys = Object.keys(localStorage).filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
       for (const k of keys) {

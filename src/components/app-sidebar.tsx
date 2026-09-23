@@ -6,7 +6,7 @@ import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from "@/components/ui/sidebar";
-import { supabase } from "@/integrations/supabase/client";
+import { authApi } from "@/integrations/api/auth";
 import { useQueryClient } from "@tanstack/react-query";
 
 const items = [
@@ -28,7 +28,7 @@ export function AppSidebar() {
   async function logout() {
     await qc.cancelQueries();
     qc.clear();
-    await supabase.auth.signOut();
+    await authApi.logout();
     navigate({ to: "/auth", replace: true });
   }
 

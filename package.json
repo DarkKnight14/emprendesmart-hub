@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "backup:local": "node --env-file=.env scripts/backup-local.mjs"
+    "backup:local": "node --env-file=.env scripts/backup-local.mjs",
+    "server:local": "node --env-file=.env scripts/local-server.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
@@ -77,12 +78,14 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "bcryptjs": "^3.0.3",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "jsonwebtoken": "^9.0.3",
     "nitro": "3.0.260603-beta",
     "pg": "^8.23.0",
     "prettier": "^3.7.3",
