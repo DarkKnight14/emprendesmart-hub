@@ -1,6 +1,7 @@
-// Copia los datos de la nube a tu PostgreSQL local.
+// Migra tu usuario, emprendimientos y actividades (y el resto de tus datos) de la nube a tu PostgreSQL local.
 // Uso: completa BACKUP_EMAIL y BACKUP_PASSWORD en .env y ejecuta: npm run backup:local
 import pg from "pg";
+import bcrypt from "bcryptjs";
 import { createClient } from "@supabase/supabase-js";
 
 const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, DATABASE_URL, BACKUP_EMAIL, BACKUP_PASSWORD } = process.env;
@@ -9,8 +10,8 @@ if (!BACKUP_EMAIL || !BACKUP_PASSWORD) throw new Error("Completa BACKUP_EMAIL y 
 
 const TABLES = {
   profiles: `id uuid primary key, nombre text, correo text, created_at timestamptz, updated_at timestamptz`,
-  emprendimientos: `id uuid primary key, user_id uuid, nombre text, tipo text, fecha_inicio date, estado text, created_at timestamptz, updated_at timestamptz`,
-  actividades: `id uuid primary key, emprendimiento_id uuid, user_id uuid, fecha date, tipo_actividad text, descripcion text, monto numeric, duracion integer, impacto text, created_at timestamptz, updated_at timestamptz`,
+  emprendimientos: `id uuid primary key default gen_random_uuid(), user_id uuid, nombre text, tipo text, fecha_inicio date, estado text, created_at timestamptz default now(), updated_at timestamptz default now()`,
+  actividades: `id uuid primary key default gen_random_uuid(), emprendimiento_id uuid, user_id uuid, fecha date, tipo_actividad text, descripcion text, monto numeric, duracion integer, impacto text, created_at timestamptz default now(), updated_at timestamptz default now()`,
   comments: `id uuid primary key, actividad_id uuid, user_id uuid, contenido text, editado boolean, fecha_edicion timestamptz, created_at timestamptz`,
   indicadores: `id uuid primary key, emprendimiento_id uuid, user_id uuid, nombre text, valor numeric, fecha_calculo timestamptz, tendencia text`,
   alertas: `id uuid primary key, emprendimiento_id uuid, user_id uuid, tipo text, mensaje text, nivel text, fecha timestamptz, leida boolean`,
@@ -19,11 +20,21 @@ const TABLES = {
 };
 
 const cloud = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
-const { error: loginErr } = await cloud.auth.signInWithPassword({ email: BACKUP_EMAIL, password: BACKUP_PASSWORD });
+const { data: login, error: loginErr } = await cloud.auth.signInWithPassword({ email: BACKUP_EMAIL, password: BACKUP_PASSWORD });
 if (loginErr) throw new Error("No se pudo iniciar sesión: " + loginErr.message);
 
 const db = new pg.Client({ connectionString: DATABASE_URL.split("?")[0] });
 await db.connect();
+
+// Usuario: mismo id que en la nube, con tu contraseña actual
+const u = login.user;
+await db.query(`CREATE TABLE IF NOT EXISTS public.usuarios (id uuid primary key default gen_random_uuid(), nombre text not null default '', correo text unique not null, password_hash text not null, created_at timestamptz not null default now())`);
+await db.query(
+  `INSERT INTO public.usuarios (id, nombre, correo, password_hash, created_at) VALUES ($1,$2,$3,$4,$5)
+   ON CONFLICT (correo) DO UPDATE SET nombre=EXCLUDED.nombre, password_hash=EXCLUDED.password_hash`,
+  [u.id, u.user_metadata?.nombre ?? BACKUP_EMAIL.split("@")[0], BACKUP_EMAIL.toLowerCase(), await bcrypt.hash(BACKUP_PASSWORD, 10), u.created_at],
+);
+console.log(`✔ usuario: ${BACKUP_EMAIL}`);
 
 for (const [table, cols] of Object.entries(TABLES)) {
   await db.query(`CREATE TABLE IF NOT EXISTS public.${table} (${cols})`);
@@ -31,16 +42,15 @@ for (const [table, cols] of Object.entries(TABLES)) {
   if (error) { console.warn(`⚠ ${table}: ${error.message}`); continue; }
   for (const row of data) {
     const keys = Object.keys(row);
-    const vals = keys.map((k) => row[k]);
     const ph = keys.map((_, i) => `$${i + 1}`).join(",");
     const upd = keys.filter((k) => k !== "id").map((k) => `${k}=EXCLUDED.${k}`).join(",");
     await db.query(
       `INSERT INTO public.${table} (${keys.join(",")}) VALUES (${ph}) ON CONFLICT (id) DO UPDATE SET ${upd}`,
-      vals,
+      keys.map((k) => row[k]),
     );
   }
   console.log(`✔ ${table}: ${data.length} filas copiadas`);
 }
 
 await db.end();
-console.log("Copia local completa.");
+console.log("Migración completa. Pon VITE_DATA_MODE=\"local\" en .env, ejecuta npm run server:local y npm run dev.");
