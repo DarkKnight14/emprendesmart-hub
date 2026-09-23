@@ -2,6 +2,7 @@
 // Datos de emprendimientos directamente desde Lovable Cloud (Supabase)
 
 import { supabase } from "@/integrations/supabase/client";
+import { IS_LOCAL, localFetch } from "./local";
 
 export interface Emprendimiento {
   id: string;
@@ -41,6 +42,7 @@ async function requireUserId(): Promise<string> {
 
 export const businessApi = {
   async list(): Promise<Emprendimiento[]> {
+    if (IS_LOCAL) return (await localFetch<Row[]>("/emprendimientos")).map(toEmp);
     const { data, error } = await supabase
       .from("emprendimientos")
       .select("id, nombre, tipo, estado, fecha_inicio, created_at")
@@ -50,6 +52,7 @@ export const businessApi = {
   },
 
   async create(input: Omit<Emprendimiento, "id" | "createdAt">): Promise<Emprendimiento> {
+    if (IS_LOCAL) return toEmp(await localFetch<Row>("/emprendimientos", "POST", input));
     const user_id = await requireUserId();
     const { data, error } = await supabase
       .from("emprendimientos")
@@ -67,6 +70,7 @@ export const businessApi = {
   },
 
   async update(id: string, input: Partial<Emprendimiento>): Promise<Emprendimiento> {
+    if (IS_LOCAL) return toEmp(await localFetch<Row>(`/emprendimientos/${id}`, "PUT", input));
     const { data, error } = await supabase
       .from("emprendimientos")
       .update({
@@ -83,6 +87,7 @@ export const businessApi = {
   },
 
   async remove(id: string): Promise<void> {
+    if (IS_LOCAL) { await localFetch(`/emprendimientos/${id}`, "DELETE"); return; }
     const { error } = await supabase.from("emprendimientos").delete().eq("id", id);
     if (error) throw new Error(error.message);
   },
