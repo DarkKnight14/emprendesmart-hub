@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "backup:local": "node --env-file=.env scripts/backup-local.mjs",
-    "server:local": "node --env-file=.env scripts/local-server.mjs"
+    "server:local": "node --env-file=.env scripts/local-server.mjs",
+    "local": "node scripts/dev-local.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
