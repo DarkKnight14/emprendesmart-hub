@@ -26,6 +26,13 @@ const TABLES = {
 const db = new pg.Client({ connectionString: DATABASE_URL.split("?")[0] });
 await db.connect();
 
+// Borra las tablas del proyecto viejo (backend NestJS) para que no se mezclen con las nuevas
+const LEGACY = ['"User"', '"Business"', '"Activity"', '"Profile"', '"Account"', '"Session"', '"_prisma_migrations"'];
+for (const t of LEGACY) {
+  await db.query(`DROP TABLE IF EXISTS public.${t} CASCADE`);
+}
+console.log("✔ tablas viejas eliminadas (User, Business, Activity, etc.)");
+
 for (const [EMAIL, PASS] of ACCOUNTS) {
   const cloud = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
   const { data: login, error: loginErr } = await cloud.auth.signInWithPassword({ email: EMAIL, password: PASS });
