@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 const { DATABASE_URL, JWT_SECRET = "empredesmart_super_secret_2026", LOCAL_API_PORT = "3001" } = process.env;
 if (!DATABASE_URL) throw new Error("Falta DATABASE_URL en .env");
+pg.types.setTypeParser(1082, (v) => v); // fechas como texto YYYY-MM-DD
 const pool = new pg.Pool({ connectionString: DATABASE_URL.split("?")[0] });
 
 await pool.query(`
@@ -29,7 +30,7 @@ const NUM = ["monto", "valor", "valor_objetivo", "valor_actual"];
 const fix = (rows) => rows.map((r) => {
   for (const k of Object.keys(r)) {
     if (NUM.includes(k) && r[k] != null) r[k] = Number(r[k]);
-    else if (r[k] instanceof Date) r[k] = k === "fecha" && r[k].getUTCHours() === 5 ? r[k].toISOString().slice(0, 10) : r[k].toISOString();
+    else if (r[k] instanceof Date) r[k] = r[k].toISOString();
   }
   return r;
 });
