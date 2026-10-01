@@ -14,7 +14,57 @@ await pool.query(`
   CREATE TABLE IF NOT EXISTS public.actividades (id uuid primary key default gen_random_uuid(), emprendimiento_id uuid, user_id uuid, fecha date, tipo_actividad text, descripcion text, monto numeric, duracion integer, impacto text, created_at timestamptz default now(), updated_at timestamptz default now());
   ALTER TABLE public.emprendimientos ALTER COLUMN id SET DEFAULT gen_random_uuid(), ALTER COLUMN created_at SET DEFAULT now(), ALTER COLUMN updated_at SET DEFAULT now();
   ALTER TABLE public.actividades ALTER COLUMN id SET DEFAULT gen_random_uuid(), ALTER COLUMN created_at SET DEFAULT now(), ALTER COLUMN updated_at SET DEFAULT now();
+  CREATE TABLE IF NOT EXISTS public.metas (id uuid primary key default gen_random_uuid(), user_id uuid, emprendimiento_id uuid, titulo text, descripcion text, tipo text, valor_objetivo numeric, valor_actual numeric, fecha_limite date, estado text, created_at timestamptz, updated_at timestamptz);
+  ALTER TABLE public.metas ALTER COLUMN id SET DEFAULT gen_random_uuid(), ALTER COLUMN tipo SET DEFAULT 'personalizada', ALTER COLUMN valor_objetivo SET DEFAULT 0, ALTER COLUMN valor_actual SET DEFAULT 0, ALTER COLUMN estado SET DEFAULT 'activa', ALTER COLUMN created_at SET DEFAULT now(), ALTER COLUMN updated_at SET DEFAULT now();
+  CREATE TABLE IF NOT EXISTS public.notas (id uuid primary key default gen_random_uuid(), user_id uuid, emprendimiento_id uuid, contenido text, created_at timestamptz, updated_at timestamptz);
+  ALTER TABLE public.notas ALTER COLUMN id SET DEFAULT gen_random_uuid(), ALTER COLUMN created_at SET DEFAULT now(), ALTER COLUMN updated_at SET DEFAULT now();
+  CREATE TABLE IF NOT EXISTS public.alertas (id uuid primary key default gen_random_uuid(), emprendimiento_id uuid, user_id uuid, tipo text, mensaje text, nivel text, fecha timestamptz, leida boolean);
+  ALTER TABLE public.alertas ALTER COLUMN id SET DEFAULT gen_random_uuid(), ALTER COLUMN nivel SET DEFAULT 'informativa', ALTER COLUMN fecha SET DEFAULT now(), ALTER COLUMN leida SET DEFAULT false;
 `);
+
+// Consultas genéricas para Seguimiento, Indicadores y Alertas (siempre limitadas al usuario)
+const DB_TABLES = new Set(["emprendimientos", "actividades", "metas", "notas", "alertas", "indicadores", "comments"]);
+const ident = (x) => { if (!/^[a-z_][a-z0-9_]*$/i.test(String(x))) throw new Error("Columna inválida"); return String(x); };
+const NUM = ["monto", "valor", "valor_objetivo", "valor_actual"];
+const fix = (rows) => rows.map((r) => {
+  for (const k of Object.keys(r)) {
+    if (NUM.includes(k) && r[k] != null) r[k] = Number(r[k]);
+    else if (r[k] instanceof Date) r[k] = k === "fecha" && r[k].getUTCHours() === 5 ? r[k].toISOString().slice(0, 10) : r[k].toISOString();
+  }
+  return r;
+});
+async function runDb(q, uid) {
+  if (!DB_TABLES.has(q.table)) throw new Error("Tabla no permitida");
+  const t = q.table, params = [uid], where = ["user_id=$1"];
+  for (const [c, op, v] of q.filters || []) {
+    if (!["=", ">=", "<="].includes(op)) throw new Error("Filtro inválido");
+    params.push(v); where.push(`${ident(c)} ${op} $${params.length}`);
+  }
+  const W = where.join(" AND ");
+  if (q.op === "select") {
+    const cols = q.cols === "*" ? "*" : q.cols.split(",").map((c) => ident(c.trim())).join(",");
+    let sql = `SELECT ${cols} FROM ${t} WHERE ${W}`;
+    if (q.order) sql += ` ORDER BY ${ident(q.order[0])} ${q.order[1] === "DESC" ? "DESC" : "ASC"}`;
+    if (q.limit) sql += ` LIMIT ${Number(q.limit) | 0}`;
+    return fix((await pool.query(sql, params)).rows);
+  }
+  if (q.op === "insert") {
+    const out = [];
+    for (const v of q.values) {
+      const row = { ...v, user_id: uid };
+      const keys = Object.keys(row).map(ident);
+      out.push(...(await pool.query(`INSERT INTO ${t} (${keys.join(",")}) VALUES (${keys.map((_, i) => "$" + (i + 1)).join(",")}) RETURNING *`, keys.map((k) => row[k]))).rows);
+    }
+    return fix(out);
+  }
+  if (q.op === "update") {
+    const sets = Object.keys(q.patch || {}).filter((k) => k !== "user_id" && k !== "id").map((k) => { params.push(q.patch[k]); return `${ident(k)}=$${params.length}`; });
+    if (!sets.length) return [];
+    return fix((await pool.query(`UPDATE ${t} SET ${sets.join(",")} WHERE ${W} RETURNING *`, params)).rows);
+  }
+  if (q.op === "delete") { await pool.query(`DELETE FROM ${t} WHERE ${W}`, params); return []; }
+  throw new Error("Operación inválida");
+}
 
 const EMP = "id, nombre, tipo, estado, fecha_inicio::text, created_at";
 const ACT = "id, fecha::text, tipo_actividad, descripcion, monto::float AS monto, impacto, duracion, emprendimiento_id";
@@ -67,6 +117,8 @@ async function handle(req, res) {
     const { rows } = await pool.query("SELECT * FROM usuarios WHERE id=$1", [uid]);
     return rows[0] ? send(res, 200, userOut(rows[0])) : send(res, 401, { message: "Usuario no encontrado" });
   }
+
+  if (parts[0] === "db" && req.method === "POST") return send(res, 200, await runDb(body, uid));
 
   const id = parts[1];
   if (parts[0] === "emprendimientos") {
