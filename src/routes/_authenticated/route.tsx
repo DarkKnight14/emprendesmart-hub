@@ -13,8 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
-import { IS_LOCAL } from "@/integrations/api/local";
+import { db as supabase } from "@/integrations/api/db";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -56,7 +55,6 @@ function AuthLayout() {
   const { data: alertas = [] } = useQuery({
     queryKey: ["alertas-header"],
     queryFn: async () => {
-      if (IS_LOCAL) return [];
       const { data, error } = await supabase
         .from("alertas")
         .select("id, mensaje, nivel, fecha, leida")
