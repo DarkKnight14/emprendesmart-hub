@@ -40,4 +40,4 @@ const localDb = {
   },
 };
 
-export const db: any = IS_LOCAL ? localDb : supabase;
+export const db = (IS_LOCAL ? localDb : supabase) as unknown as typeof supabase;
